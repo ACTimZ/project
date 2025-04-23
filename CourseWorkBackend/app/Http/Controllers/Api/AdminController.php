@@ -66,6 +66,20 @@ class AdminController extends Controller
 
     public function sendMessage(Request $request, Chat $chat)
     {
-        // Логика отправки сообщения от админа
+        $request->validate([
+            'message' => 'required|string'
+        ]);
+
+        $message = $chat->messages()->create([
+            'user_id' => $request->user()->id,
+            'content' => $request->message
+        ]);
+
+        broadcast(new NewMessage($message))->toOthers();
+
+        return response()->json([
+            'message' => $message,
+            'status' => 'Сообщение отправлено'
+        ]);
     }
 }

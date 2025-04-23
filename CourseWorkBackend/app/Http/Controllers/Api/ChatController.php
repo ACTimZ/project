@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Events\NewMessage;
 use App\Models\Chat;
 use App\Models\User;
 use App\Models\Message;
@@ -101,8 +102,7 @@ class ChatController extends Controller
             'content' => $request->message
         ]);
 
-        // Здесь можно добавить событие для веб-сокетов
-        // event(new NewMessage($message));
+        broadcast(new NewMessage($message))->toOthers();
 
         return response()->json([
             'message' => $message,

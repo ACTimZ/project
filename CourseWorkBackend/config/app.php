@@ -2,6 +2,12 @@
 
 return [
 
+    'providers' => [
+        // ...
+        App\Providers\BroadcastServiceProvider::class,
+        // ...
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Application Name

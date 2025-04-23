@@ -1,4 +1,5 @@
 import './assets/main.css'
+import axios from '@/axios'
 
 import 'flowbite' // для карусели
 
@@ -9,6 +10,8 @@ import App from './App.vue'
 import router from './router'
 
 const app = createApp(App)
+
+app.config.globalProperties.$axios = axios
 
 app.use(createPinia())
 app.use(router)

@@ -3,47 +3,64 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Flat;
+use App\Models\Favorite;
 use Illuminate\Http\Request;
 
 class FavoriteController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Получить все избранные квартиры пользователя
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        $favorites = $request->user()
+            ->favorites()
+            ->with('flat')
+            ->latest()
+            ->get();
+
+        return response()->json($favorites);
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Добавить квартиру в избранное
      */
-    public function store(Request $request)
+    public function store(Request $request, Flat $flat)
     {
-        //
+        $existingFavorite = $request->user()
+            ->favorites()
+            ->where('flat_id', $flat->id)
+            ->first();
+
+        if ($existingFavorite) {
+            return response()->json([
+                'message' => 'Эта квартира уже в избранном'
+            ], 422);
+        }
+
+        $favorite = $request->user()->favorites()->create([
+            'flat_id' => $flat->id
+        ]);
+
+        return response()->json([
+            'message' => 'Квартира добавлена в избранное',
+            'favorite' => $favorite
+        ], 201);
     }
 
     /**
-     * Display the specified resource.
+     * Удалить квартиру из избранного
      */
-    public function show(string $id)
+    public function destroy(Request $request, Flat $flat)
     {
-        //
-    }
+        $request->user()
+            ->favorites()
+            ->where('flat_id', $flat->id)
+            ->delete();
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return response()->json([
+            'message' => 'Квартира удалена из избранного'
+        ]);
     }
 }

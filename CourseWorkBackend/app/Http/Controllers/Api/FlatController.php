@@ -3,47 +3,98 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Flat;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class FlatController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        //
+        $flats = Flat::latest()->get();
+        return response()->json($flats);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+    public function show(Flat $flat)
+    {
+        return response()->json($flat);
+    }
+
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'rooms_count' => 'required|integer|min:1',
+            'square_meters' => 'required|numeric|min:1',
+            'floor' => 'required|integer|min:1',
+            'floors_in_house' => 'required|integer|min:1',
+            'housing_complex' => 'required|string|max:255',
+            'price_current' => 'required|numeric|min:0',
+            'has_balcony' => 'required|boolean',
+            'bathroom_combined' => 'required|boolean',
+            'house_type' => 'required|in:brick,panel,aerated_concrete',
+            'description' => 'required|string',
+            'images' => 'required|array|size:4',
+            'images.*' => 'required|image|mimes:jpeg,png,jpg|max:2048'
+        ]);
+
+        $imagePaths = [];
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $image) {
+                $path = $image->store('flats', 'public');
+                $imagePaths[] = $path;
+            }
+        }
+
+        $flat = Flat::create([
+            ...$request->except('images'),
+            'price_start' => $request->price_current,
+            'images' => $imagePaths
+        ]);
+
+        return response()->json($flat, 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function update(Request $request, Flat $flat)
     {
-        //
+        $request->validate([
+            'rooms_count' => 'sometimes|required|integer|min:1',
+            'square_meters' => 'sometimes|required|numeric|min:1',
+            'floor' => 'sometimes|required|integer|min:1',
+            'floors_in_house' => 'sometimes|required|integer|min:1',
+            'housing_complex' => 'sometimes|required|string|max:255',
+            'price_current' => 'sometimes|required|numeric|min:0',
+            'has_balcony' => 'sometimes|required|boolean',
+            'bathroom_combined' => 'sometimes|required|boolean',
+            'house_type' => 'sometimes|required|in:brick,panel,aerated_concrete',
+            'description' => 'sometimes|required|string',
+            'images' => 'sometimes|array|size:4',
+            'images.*' => 'sometimes|image|mimes:jpeg,png,jpg|max:2048'
+        ]);
+
+        if ($request->hasFile('images')) {
+            foreach ($flat->images as $oldImage) {
+                Storage::disk('public')->delete($oldImage);
+            }
+
+            $imagePaths = [];
+            foreach ($request->file('images') as $image) {
+                $path = $image->store('flats', 'public');
+                $imagePaths[] = $path;
+            }
+            $request->merge(['images' => $imagePaths]);
+        }
+
+        $flat->update($request->all());
+        return response()->json($flat);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    public function destroy(Flat $flat)
     {
-        //
-    }
+        foreach ($flat->images as $image) {
+            Storage::disk('public')->delete($image);
+        }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        $flat->delete();
+        return response()->json(null, 204);
     }
 }

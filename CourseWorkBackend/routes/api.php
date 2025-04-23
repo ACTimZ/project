@@ -27,13 +27,17 @@ Route::middleware(['auth:sanctum'])->group(function () {
 });
 
 Route::middleware(['auth:sanctum', 'is.admin'])->prefix('admin')->group(function () {
+    // Главная страница админки
     Route::get('/', [AdminController::class, 'dashboard']);
+
+    // Управление квартирами
+    Route::get('/edit_flat/{flat}', [AdminController::class, 'editFlat']);
+    Route::delete('/delete_flat/{flat}', [AdminController::class, 'deleteFlat']);
+
+    // Управление пользователями
     Route::get('/users', [AdminController::class, 'users']);
-    Route::delete('/users/{user}', [AdminController::class, 'deleteUser']);
+    Route::delete('/delete_user/{user}', [AdminController::class, 'deleteUser']);
 
-    Route::post('/flats', [FlatController::class, 'store']);
-    Route::put('/flats/{flat}', [FlatController::class, 'update']);
-    Route::delete('/flats/{flat}', [FlatController::class, 'destroy']);
-
+    // Чаты
     Route::get('/chats', [AdminController::class, 'chats']);
 });

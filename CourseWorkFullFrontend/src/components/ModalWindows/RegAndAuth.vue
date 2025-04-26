@@ -1,83 +1,108 @@
 <script setup>
 import { ref, watch } from 'vue'
+import { useAuthStore } from '@/stores/auth'
+import { useRouter } from 'vue-router'
 
 const visible = defineModel('visible')
+const authStore = useAuthStore()
+const router = useRouter()
 
 const showRegister = ref(false)
 const showLogin = ref(false)
+const error = ref('')
 
 watch(
   visible,
   (newVal) => {
     showRegister.value = newVal
     if (!newVal) showLogin.value = false
+    error.value = '' // Сбрасываем ошибку при переключении окон
   },
   { immediate: true },
 )
 
 // Форма регистрации
 const registerForm = ref({
-  firstName: '',
-  lastName: '',
+  first_name: '',
+  last_name: '',
   email: '',
   phone: '',
   password: '',
+  password_confirmation: '',
   agree: false,
 })
 
-// Форма логина
 const loginForm = ref({
   email: '',
-  password: '',
+  password: ''
 })
 
 const toggleModal = () => {
   showRegister.value = !showRegister.value
   showLogin.value = !showLogin.value
+  error.value = '' // Сбрасываем ошибку при переключении окон
 }
 
 const closeModal = () => {
   showRegister.value = false
   showLogin.value = false
-  visible.value = false // ← закрытие окна автоматически отражается в родителе
+  visible.value = false
+  error.value = ''
 }
 
-const submitRegister = () => {
-  console.log(registerForm.value)
+const submitRegister = async () => {
+  try {
+    error.value = ''
+    if (!registerForm.value.agree) {
+      error.value = 'Необходимо принять условия использования'
+      return
+    }
+
+    await authStore.register(registerForm.value)
+    closeModal()
+    router.push('/profile') // Перенаправляем на профиль после успешной регистрации
+  } catch (e) {
+    error.value = e.response?.data?.message || 'Ошибка при регистрации'
+  }
 }
 
-const submitLogin = () => {
-  console.log(loginForm.value)
+const submitLogin = async () => {
+  try {
+    error.value = ''
+    await authStore.login(loginForm.value)
+    closeModal()
+    router.push('/profile') // Перенаправляем на профиль после успешного входа
+  } catch (e) {
+    error.value = e.response?.data?.message || 'Неверный email или пароль'
+  }
 }
 </script>
 
 <template>
   <article>
     <!-- Registration Modal -->
-    <article
-      v-if="showRegister"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-    >
-      <article
-        class="w-full max-w-4xl bg-gray-100 rounded-xl relative xl:mx-60 sm:mx-15 mx-5 lg:pt-10 pt-5 pb-7 lg:px-26 px-5"
-      >
-        <button @click="closeModal" class="absolute top-4 right-4 text-3xl cursor-pointer">
-          &times;
-        </button>
+    <article v-if="showRegister" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+      <article class="w-full max-w-4xl bg-gray-100 rounded-xl relative xl:mx-60 sm:mx-15 mx-5 lg:pt-10 pt-5 pb-7 lg:px-26 px-5">
+        <button @click="closeModal" class="absolute top-4 right-4 text-3xl cursor-pointer">&times;</button>
         <h2 class="self-center text-3xl font-bold text-center mb-6">Регистрация</h2>
 
-        <form class="flex flex-col gap-5">
+        <!-- Сообщение об ошибке -->
+        <p v-if="error" class="text-red-500 text-center mb-4">{{ error }}</p>
+
+        <form @submit.prevent="submitRegister" class="flex flex-col gap-5">
           <article class="flex flex-col md:flex-row lg:gap-10 gap-4">
             <input
-              v-model="registerForm.firstName"
+              v-model="registerForm.first_name"
               type="text"
               placeholder="Имя"
+              required
               class="md:w-6/12 w-full border border-gray-300 rounded-xl bg-gray-50 p-5 text-md focus:outline-none focus:border-gray-500 focus:bg-white"
             />
             <input
-              v-model="registerForm.lastName"
+              v-model="registerForm.last_name"
               type="text"
               placeholder="Фамилия"
+              required
               class="md:w-6/12 w-full border border-gray-300 rounded-xl bg-gray-50 p-5 text-md focus:outline-none focus:border-gray-500 focus:bg-white"
             />
           </article>
@@ -87,12 +112,14 @@ const submitLogin = () => {
               v-model="registerForm.phone"
               type="tel"
               placeholder="Телефон"
+              required
               class="md:w-6/12 w-full border border-gray-300 rounded-xl bg-gray-50 p-5 text-md focus:outline-none focus:border-gray-500 focus:bg-white"
             />
             <input
               v-model="registerForm.email"
               type="email"
               placeholder="Почта"
+              required
               class="md:w-6/12 w-full border border-gray-300 rounded-xl bg-gray-50 p-5 text-md focus:outline-none focus:border-gray-500 focus:bg-white"
             />
           </article>
@@ -101,6 +128,15 @@ const submitLogin = () => {
             v-model="registerForm.password"
             type="password"
             placeholder="Пароль"
+            required
+            class="w-full border border-gray-300 rounded-xl bg-gray-50 p-5 text-md focus:outline-none focus:border-gray-500 focus:bg-white"
+          />
+
+          <input
+            v-model="registerForm.password_confirmation"
+            type="password"
+            placeholder="Подтвердите пароль"
+            required
             class="w-full border border-gray-300 rounded-xl bg-gray-50 p-5 text-md focus:outline-none focus:border-gray-500 focus:bg-white"
           />
 
@@ -108,6 +144,7 @@ const submitLogin = () => {
             <input
               v-model="registerForm.agree"
               type="checkbox"
+              required
               class="w-6 h-6 border border-gray-300 rounded-sm text-sky-100 focus:ring-2 focus:ring-sky-100 mt-1.5"
             />
             <label class="text-sm md:text-base leading-tight">
@@ -119,14 +156,16 @@ const submitLogin = () => {
           </article>
 
           <button
-            @click.prevent="submitRegister"
+            type="submit"
             class="cursor-pointer self-center py-3.5 lg:px-6 md:px-2.5 px-8 bg-orange-100 lg:text-lg md:text-md text-lg font-bold text-indigo-900 rounded text-center lg:mt-3"
           >
             Создать аккаунт
           </button>
+
           <p class="text-sm text-center mt-2">
             Создан аккаунт?
             <button
+              type="button"
               @click="toggleModal"
               class="cursor-pointer text-indigo-900 font-semibold hover:underline"
             >
@@ -138,23 +177,20 @@ const submitLogin = () => {
     </article>
 
     <!-- Login Modal -->
-    <article
-      v-if="showLogin"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-    >
-      <article
-        class="w-full max-w-2xl bg-gray-100 rounded-xl relative xl:mx-60 sm:mx-15 mx-5 lg:pt-10 pt-5 pb-7 lg:px-26 px-10"
-      >
-        <button @click="closeModal" class="absolute top-4 right-4 text-3xl cursor-pointer">
-          &times;
-        </button>
+    <article v-if="showLogin" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+      <article class="w-full max-w-2xl bg-gray-100 rounded-xl relative xl:mx-60 sm:mx-15 mx-5 lg:pt-10 pt-5 pb-7 lg:px-26 px-10">
+        <button @click="closeModal" class="absolute top-4 right-4 text-3xl cursor-pointer">&times;</button>
         <h2 class="text-3xl font-bold text-center mb-6">Авторизация</h2>
 
-        <form class="flex flex-col gap-5">
+        <!-- Сообщение об ошибке -->
+        <p v-if="error" class="text-red-500 text-center mb-4">{{ error }}</p>
+
+        <form @submit.prevent="submitLogin" class="flex flex-col gap-5">
           <input
             v-model="loginForm.email"
             type="email"
             placeholder="Почта"
+            required
             class="w-full border border-gray-300 rounded-xl bg-gray-50 p-5 text-md focus:outline-none focus:border-gray-500 focus:bg-white"
           />
 
@@ -162,22 +198,21 @@ const submitLogin = () => {
             v-model="loginForm.password"
             type="password"
             placeholder="Пароль"
+            required
             class="w-full border border-gray-300 rounded-xl bg-gray-50 p-5 text-md focus:outline-none focus:border-gray-500 focus:bg-white"
           />
 
-          <p class="text-sm text-right">
-            <a href="#" class="text-indigo-900 hover:underline">Забыли пароль?</a>
-          </p>
-
           <button
-            @click.prevent="submitLogin"
+            type="submit"
             class="cursor-pointer self-center py-3.5 lg:px-6 md:px-2.5 px-8 bg-orange-100 lg:text-lg md:text-md text-lg font-bold text-indigo-900 rounded text-center lg:mt-3"
           >
             Войти
           </button>
+
           <p class="text-sm text-center mt-2">
             Желаете присоединиться к нам?
             <button
+              type="button"
               @click="toggleModal"
               class="cursor-pointer text-indigo-900 font-semibold hover:underline"
             >

@@ -10,11 +10,9 @@ export let useFlatsStore = defineStore('flats', {
   }),
 
   actions: {
-    async fetchFlats(page = 1, filters = {}) {
+    async fetchFlats(page = 1) {
       try {
-        const response = await axios.get('/flats', {
-          params: { ...filters, page },
-        })
+        const response = await axios.get(`/flats?page=${page}`)
         this.flats = response.data.data
         this.currentPage = response.data.current_page
         this.totalPages = response.data.last_page

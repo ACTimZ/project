@@ -1,27 +1,47 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useFlatsStore } from '@/stores/flats'
 import ChatModal from '../ModalWindows/ChatModal.vue'
+
+const props = defineProps({
+  filters: Object,
+})
 
 const isModalVisible = ref(false)
 const selectedFlat = ref(null)
 const flatsStore = useFlatsStore()
+
+watch(
+  () => props.filters,
+  () => {
+    fetchFlats()
+  },
+  { deep: true }
+)
 
 function openChat(flatData) {
   selectedFlat.value = flatData
   isModalVisible.value = true
 }
 
+async function fetchFlats(page = 1) {
+  try {
+    await flatsStore.fetchFlats(page, props.filters)
+  } catch (error) {
+    console.error('Ошибка загрузки квартир:', error)
+  }
+}
+
 function changePage(direction) {
   if (direction === 'next' && flatsStore.currentPage < flatsStore.totalPages) {
-    flatsStore.fetchFlats(flatsStore.currentPage + 1)
+    fetchFlats(flatsStore.currentPage + 1)
   } else if (direction === 'prev' && flatsStore.currentPage > 1) {
-    flatsStore.fetchFlats(flatsStore.currentPage - 1)
+    fetchFlats(flatsStore.currentPage - 1)
   }
 }
 
 onMounted(() => {
-  flatsStore.fetchFlats()
+  fetchFlats()
 })
 
 function numberWithSpaces(x) {
@@ -43,7 +63,6 @@ function numberWithSpaces(x) {
         :initial-message="`Здравствуйте, хочу связаться с квартирой №${flatsStore.selectedFlat.id}, имеющей ${flatsStore.selectedFlat.square_meters} кв. метров и стоящей ${numberWithSpaces(flatsStore.selectedFlat.price_current)} рублей!`"
       />
 
-      <!-- Пагинация сверху -->
       <article
         class="flex sm:flex-row flex-col sm:items-center items-start sm:justify-between sm:gap-0 gap-1 mt-10 mb-7"
       >
@@ -71,7 +90,6 @@ function numberWithSpaces(x) {
         </article>
       </article>
 
-      <!-- Каталог -->
       <article class="flex flex-col gap-12.5">
         <article
           v-for="flat in flatsStore.flats"
@@ -131,7 +149,6 @@ function numberWithSpaces(x) {
         </article>
       </article>
 
-      <!-- Пагинация снизу -->
       <article class="my-8 flex flex-row justify-center">
         <article class="flex flex-row items-center md:gap-7 gap-3">
           <button

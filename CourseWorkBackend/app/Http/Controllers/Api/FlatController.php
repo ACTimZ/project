@@ -11,7 +11,41 @@ class FlatController extends Controller
 {
     public function index(Request $request)
     {
-        $flats = Flat::paginate(10);
+        $query = Flat::query();
+
+        if ($request->filled('rooms_count')) {
+            $query->where('rooms_count', $request->rooms_count);
+        }
+        if ($request->filled('floor')) {
+            $query->where('floor', $request->floor);
+        }
+        if ($request->filled('housing_complex')) {
+            $query->where('housing_complex', 'like', '%' . $request->housing_complex . '%');
+        }
+        if ($request->filled('house_type')) {
+            $query->where('house_type', 'like', '%' . $request->house_type . '%');
+        }
+        if ($request->filled('price_min')) {
+            $query->where('price_current', '>=', $request->price_min);
+        }
+        if ($request->filled('price_max')) {
+            $query->where('price_current', '<=', $request->price_max);
+        }
+        if ($request->filled('price_per_m2_min')) {
+            $query->whereRaw('price_current / square_meters >= ?', [$request->price_per_m2_min]);
+        }
+        if ($request->filled('price_per_m2_max')) {
+            $query->whereRaw('price_current / square_meters <= ?', [$request->price_per_m2_max]);
+        }
+        if ($request->filled('bathroom_combined')) {
+            $query->where('bathroom_combined', $request->bathroom_combined);
+        }
+        if ($request->filled('has_balcony')) {
+            $query->where('has_balcony', $request->has_balcony);
+        }
+
+        $flats = $query->paginate(10);
+
         return response()->json($flats);
     }
 

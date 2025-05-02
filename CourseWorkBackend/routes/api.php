@@ -16,9 +16,7 @@ Route::get('/flats/{flat}', [FlatController::class, 'show']);
 // Маршруты для авторизованных пользователей
 Route::middleware('auth:sanctum')->group(function () {
 
-    // Профиль
     Route::get('/profile', [ProfileController::class, 'show']);
-    Route::put('/profile', [ProfileController::class, 'update']);
 
     // Избранное
     Route::get('/favorites', [FavoriteController::class, 'index']);

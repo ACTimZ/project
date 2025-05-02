@@ -19,7 +19,7 @@ return new class extends Migration
             $table->decimal('price_start', 12, 2);
             $table->boolean('has_balcony');
             $table->boolean('bathroom_combined');
-            $table->enum('house_type', ['brick', 'panel', 'aerated_concrete']);
+            $table->enum('house_type', ['Кирпичный', 'Панельный', 'Газобетонный']);
             $table->text('description');
             $table->json('images');
             $table->timestamps();

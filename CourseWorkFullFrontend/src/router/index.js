@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 import MainPage from '@/views/MainPage.vue'
 import ContactsPage from '@/views/ContactsPage.vue'
 import CatalogPage from '@/views/CatalogPage.vue'
@@ -26,7 +27,7 @@ const router = createRouter({
       component: CatalogPage,
     },
     {
-      path: '/flat',
+      path: '/flat/:id',
       name: 'flat',
       component: FlatPage,
     },
@@ -55,6 +56,16 @@ const router = createRouter({
     }
     return { top: 0 }
   },
+})
+
+router.beforeEach((to, from, next) => {
+  const authStore = useAuthStore()
+
+  if (to.path === '/profile' && !authStore.isAuthenticated) {
+    next('/')
+  } else {
+    next()
+  }
 })
 
 export default router

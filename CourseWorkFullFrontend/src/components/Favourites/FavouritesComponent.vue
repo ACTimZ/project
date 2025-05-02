@@ -1,82 +1,41 @@
 <script setup>
+import { ref, onMounted } from 'vue'
+import axios from '@/axios'
 import { useRouter } from 'vue-router'
-import { ref, onMounted, computed } from 'vue'
-import { gsap } from 'gsap'
 import ChatModal from '../ModalWindows/ChatModal.vue'
 
-let priceChange = computed(() => {
-  let diff = flat.new_price - flat.price
-  return {
-    diff: Math.abs(diff),
-    isIncrease: diff > 0,
-    isDecrease: diff < 0,
-    text:
-      diff === 0
-        ? null
-        : `Цена ${diff > 0 ? 'увеличилась' : 'уменьшилась'} на: ${numberWithSpaces(Math.abs(diff))} ₽`,
-  }
-})
-
+const router = useRouter()
 const isModalVisible = ref(false)
 const selectedFlat = ref(null)
+const favourites = ref([]) // Список избранного
 
+// Функция для открытия чата
 function openChat(flatData) {
   selectedFlat.value = flatData
   isModalVisible.value = true
 }
 
-onMounted(() => {
-  let btn_load_more = document.getElementById('load_more')
-
-  btn_load_more.addEventListener('mousemove', () => {
-    gsap.to(btn_load_more, {
-      scale: 1.1,
-    })
-  })
-
-  btn_load_more.addEventListener('mouseleave', () => {
-    gsap.to(btn_load_more, {
-      scale: 1,
-    })
-  })
-
-  let card = document.querySelectorAll('.catalog-card')
-
-  card.forEach((element) => {
-    element.addEventListener('mousemove', () => {
-      gsap.to(element, {
-        scale: 1.01,
-      })
-    })
-
-    element.addEventListener('mouseleave', () => {
-      gsap.to(element, {
-        scale: 1,
-      })
-    })
-  })
+// Загрузка данных избранного при монтировании компонента
+onMounted(async () => {
+  try {
+    const response = await axios.get('/favorites') // Запрос к API
+    favourites.value = response.data // Сохраняем данные в переменную
+  } catch (error) {
+    console.error('Ошибка загрузки избранного:', error)
+  }
 })
 
-let list = ref(5)
-
-let flat = {
-  id: 1,
-  count_rooms: 1,
-  kv_meters: 32,
-  floor: 2,
-  sum_floor_in_house: 6,
-  housing_complex: 'Нирванна',
-  price: 100000,
-  new_price: 100000,
-  description:
-    'Уютная 1-комнатная квартира ждет вас в ЖК «Нирвана»! Площадь 32 м², 2 этаж из 6. Идеальный вариант для комфортного проживания в современном жилом комплексе. Узнайте больше о преимуществах этого предложения!',
-}
-function numberWithSpaces(x) {
-  return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+// Функция для удаления объекта из избранного
+async function removeFromFavourites(flatId) {
+  try {
+    await axios.delete(`/favorites/${flatId}`) // Удаление через API
+    favourites.value = favourites.value.filter(flat => flat.id !== flatId) // Обновляем список
+  } catch (error) {
+    console.error('Ошибка удаления из избранного:', error)
+  }
 }
 
-let router = useRouter()
-
+// Функция для возврата назад
 function goBack() {
   router.back()
 }
@@ -92,9 +51,9 @@ function goBack() {
       :key="selectedFlat?.id"
       @send="(msg) => console.log('Отправлено:', msg)"
       v-if="selectedFlat"
-      :initial-message="`Здравствуйте, хочу связаться с квартирой №${selectedFlat.id}, имеющей ${selectedFlat.kv_meters} кв. метров и стоящей ${numberWithSpaces(selectedFlat.price)} рублей!`"
+      :initial-message="`Здравствуйте, хочу связаться с квартирой №${selectedFlat.id}, имеющей ${selectedFlat.kv_meters} кв. метров и стоящей ${selectedFlat.price} рублей!`"
     />
-    <!-- asd -->
+
     <article class="sticky top-7.5 z-50 mt-5 md:ms-0 ms-5">
       <button
         @click="goBack"
@@ -109,11 +68,11 @@ function goBack() {
         <h2 class="lg:text-3xl text-xl font-medium">Избранное</h2>
       </article>
 
-      <!-- Каталог -->
+      <!-- Список избранного -->
       <article class="flex flex-col gap-12.5">
         <article
-          v-for="i in list"
-          :key="i"
+          v-for="flat in favourites"
+          :key="flat.id"
           class="bg-white flex flex-col md:flex-row rounded-lg overflow-hidden transition-shadow duration-300 hover:shadow-lg shadow-indigo-200 catalog-card"
         >
           <article
@@ -121,7 +80,7 @@ function goBack() {
           >
             <article class="w-full h-64 md:h-full max-h-[400px] overflow-hidden rounded-md">
               <img
-                src="../Images/Another_Example_Flat.jpg"
+                :src="flat.image || '../Images/Another_Example_Flat.jpg'"
                 alt="Квартира"
                 class="w-full h-full object-cover object-center"
               />
@@ -131,6 +90,7 @@ function goBack() {
             class="order-2 md:order-1 w-full md:w-[60%] p-6 sm:p-8 relative bg-indigo-50 flex flex-col gap-5"
           >
             <button
+              @click="removeFromFavourites(flat.id)"
               class="absolute md:top-4 top-1 right-4 font-medium hover:bg-rose-300 hover:text-rose-950 px-3 py-1 rounded-lg duration-150 cursor-pointer"
             >
               X Удалить
@@ -144,32 +104,15 @@ function goBack() {
               ЖК "{{ flat.housing_complex }}"
             </h2>
 
-            <!-- <article>
-              <p class="font-bold text-lg sm:text-xl">Цена:</p>
-              <p class="font-bold text-2xl sm:text-3xl">{{ numberWithSpaces(flat.new_price) }} ₽</p>
-              <p class="text-sm sm:text-base text-gray-600">
-                {{ numberWithSpaces(Math.floor(flat.new_price / flat.kv_meters)) }} ₽ за м²
-              </p>
-            </article> -->
             <article class="flex flex-col sm:flex-row sm:items-center sm:gap-4">
               <article>
                 <p class="font-bold text-lg sm:text-xl">Цена:</p>
                 <p class="font-bold text-2xl sm:text-3xl">
-                  {{ numberWithSpaces(flat.new_price) }} ₽
+                  {{ flat.price.toLocaleString() }} ₽
                 </p>
                 <p class="text-sm sm:text-base text-gray-600">
-                  {{ numberWithSpaces(Math.floor(flat.new_price / flat.kv_meters)) }} ₽ за м²
+                  {{ (flat.price / flat.kv_meters).toFixed(2).toLocaleString() }} ₽ за м²
                 </p>
-              </article>
-
-              <article
-                v-if="priceChange.text"
-                :class="[
-                  'mt-3 sm:mt-0 sm:ml-2 px-3 py-2 rounded-md text-white text-sm sm:text-base w-fit',
-                  priceChange.isIncrease ? 'bg-green-500' : 'bg-red-500',
-                ]"
-              >
-                {{ priceChange.text }}
               </article>
             </article>
 
@@ -189,10 +132,6 @@ function goBack() {
             </router-link>
           </article>
         </article>
-      </article>
-
-      <article class="my-10 flex flex-row justify-center">
-        <a href="" class="lg:text-2xl text-xl font-medium" id="load_more">Прогрузить еще</a>
       </article>
     </article>
   </section>

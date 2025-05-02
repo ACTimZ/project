@@ -3,8 +3,7 @@ import axios from '@/axios'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
-    user: null,
-    token: localStorage.getItem('token'),
+    user: JSON.parse(localStorage.getItem('user')) || null,
   }),
 
   actions: {
@@ -13,8 +12,7 @@ export const useAuthStore = defineStore('auth', {
         await axios.get('/sanctum/csrf-cookie')
         const response = await axios.post('/register', userData)
         this.user = response.data.user
-        this.token = response.data.token
-        localStorage.setItem('token', response.data.token)
+        localStorage.setItem('user', JSON.stringify(response.data.user))
         return true
       } catch (error) {
         console.error('Ошибка регистрации:', error)
@@ -26,21 +24,18 @@ export const useAuthStore = defineStore('auth', {
         await axios.get('/sanctum/csrf-cookie')
         const response = await axios.post('/login', credentials)
         this.user = response.data.user
-        this.token = response.data.token
-        localStorage.setItem('token', response.data.token)
+        localStorage.setItem('user', JSON.stringify(response.data.user))
         return true
       } catch (error) {
         console.error('Ошибка входа:', error)
         throw error
       }
     },
-
     async logout() {
       try {
         await axios.post('/logout')
         this.user = null
-        this.token = null
-        localStorage.removeItem('token')
+        localStorage.removeItem('user')
         return true
       } catch (error) {
         console.error('Ошибка выхода:', error)
@@ -50,7 +45,7 @@ export const useAuthStore = defineStore('auth', {
   },
 
   getters: {
-    isAuthenticated: (state) => !!state.token,
+    isAuthenticated: (state) => !!state.user,
     isAdmin: (state) => state.user?.role === 'admin',
   },
 })

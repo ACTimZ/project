@@ -13,17 +13,17 @@ class AuthenticatedSessionController extends Controller
         $request->authenticate();
 
         $user = $request->user();
-        $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
             'user' => $user,
-            'token' => $token
         ]);
     }
 
     public function destroy(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
+        auth()->guard('web')->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
 
         return response()->json([
             'message' => 'Выход выполнен успешно'

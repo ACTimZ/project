@@ -9,9 +9,9 @@ use Illuminate\Support\Facades\Storage;
 
 class FlatController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $flats = Flat::latest()->get();
+        $flats = Flat::paginate(10);
         return response()->json($flats);
     }
 

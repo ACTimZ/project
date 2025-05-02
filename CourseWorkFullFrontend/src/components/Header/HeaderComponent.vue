@@ -1,11 +1,13 @@
 <script setup>
 import { ref } from 'vue'
+import { useAuthStore } from '@/stores/auth'
 import ButtonCatalogComponent from './Buttons/Catalog/ButtonCatalogComponent.vue'
 import CreateProfileComponent from './Buttons/RelatedWithProfile/CreateProfileComponent.vue'
 import LogoComponent from '../OtherUIElements/LogoComponent.vue'
 import RegAndAuth from '../ModalWindows/RegAndAuth.vue'
 
 const isProfileModalVisible = ref(false)
+const authStore = useAuthStore()
 
 function sendAlert(text) {
   alert(text)
@@ -85,7 +87,17 @@ function sendAlert(text) {
         </article>
         <article class="flex flex-row sm:gap-5 gap-3 items-center">
           <ButtonCatalogComponent />
-          <CreateProfileComponent @open="isProfileModalVisible = true" />
+          <template v-if="authStore.isAuthenticated">
+            <router-link
+              to="/profile"
+              class="font-bold border-2 border-indigo-900 sm:py-3 sm:px-7 py-2 px-3 xl:text-xl rounded-sm text-indigo-900 md:text-md"
+            >
+              ПРОФИЛЬ
+            </router-link>
+          </template>
+          <template v-else>
+            <CreateProfileComponent @open="isProfileModalVisible = true" />
+          </template>
           <!-- <CreateProfileComponent /> -->
         </article>
       </article>

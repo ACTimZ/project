@@ -1,13 +1,13 @@
 import axios from 'axios'
 
 const axiosInstance = axios.create({
-  baseURL: 'http://localhost:8000',
+  baseURL: 'http://localhost:8000/api',
   withCredentials: true,
   headers: {
     'X-Requested-With': 'XMLHttpRequest',
     'Content-Type': 'application/json',
-    'Accept': 'application/json'
-  }
+    'Accept': 'application/json',
+  },
 })
 
 axiosInstance.interceptors.request.use(config => {
@@ -17,6 +17,7 @@ axiosInstance.interceptors.request.use(config => {
   }
   return config
 })
+
 
 let isRefreshing = false
 let failedQueue = []

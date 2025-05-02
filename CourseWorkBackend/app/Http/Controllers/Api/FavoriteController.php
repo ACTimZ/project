@@ -14,11 +14,7 @@ class FavoriteController extends Controller
      */
     public function index(Request $request)
     {
-        $favorites = $request->user()
-            ->favorites()
-            ->with('flat')
-            ->latest()
-            ->get();
+        $favorites = $request->user()->favorites()->with('flat')->get();
 
         return response()->json($favorites);
     }

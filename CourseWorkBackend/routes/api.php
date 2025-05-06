@@ -9,25 +9,15 @@ use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use Illuminate\Support\Facades\Route;
 
-// Публичные маршруты
 Route::get('/flats', [FlatController::class, 'index']);
 Route::get('/flats/{flat}', [FlatController::class, 'show']);
 
-// Маршруты для авторизованных пользователей
+Route::get('/favourites', [FavoriteController::class, 'index']);
+Route::post('/favourites', [FavoriteController::class, 'store']);
+Route::delete('/favourites', [FavoriteController::class, 'destroy']);
+
 Route::middleware('auth:sanctum')->group(function () {
-
     Route::get('/profile', [ProfileController::class, 'show']);
-
-    // Избранное
-    Route::get('/favorites', [FavoriteController::class, 'index']);
-    Route::post('/favorites/{flat}', [FavoriteController::class, 'store']);
-    Route::delete('/favorites/{flat}', [FavoriteController::class, 'destroy']);
-
-    // Чаты для обычных пользователей
-    Route::get('/chats', [ChatController::class, 'index']);
-    Route::get('/chats/{chat}', [ChatController::class, 'show']);
-    Route::post('/chats', [ChatController::class, 'store']);
-    Route::post('/chats/{chat}/messages', [ChatController::class, 'sendMessage']);
 });
 
 // Маршруты для админа
@@ -43,7 +33,4 @@ Route::middleware(['auth:sanctum', 'is.admin'])->prefix('admin')->group(function
     // Управление пользователями
     Route::get('/users', [AdminController::class, 'users']);
     Route::delete('/users/{user}', [AdminController::class, 'deleteUser']);
-
-    // Чаты для админа
-    Route::get('/chats', [AdminController::class, 'chats']);
 });

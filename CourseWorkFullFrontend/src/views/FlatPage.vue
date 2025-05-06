@@ -6,14 +6,84 @@ import { useRouter, useRoute } from 'vue-router'
 import { ref, onMounted } from 'vue'
 import axios from '@/axios'
 
+// import { useAuthStore } from '@/stores/auth'
+// const authStore = useAuthStore()
+
 const flat = ref(null)
 const isLoading = ref(true)
-const showChat = ref(false)
-const prefilledMessage = ref('')
+// const showChat = ref(false)
+// const prefilledMessage = ref('')
 const isFavourite = ref(false)
 
 const router = useRouter()
 const route = useRoute()
+const userId = JSON.parse(localStorage.getItem('user')).id
+
+// async function checkIfFavourite() {
+//   try {
+//     const response = await axios.get('/profile/favourites')
+//     isFavourite.value = response.data.some(fav => fav.flat_id === flat.value.id)
+//   } catch (error) {
+//     console.log("Ответ:")
+//     console.error('Ошибка проверки избранного:', error)
+//   }
+// }
+
+// function isUserAuthenticated() {
+//   return !!localStorage.getItem('user')
+// }
+
+// function isUserAuthenticated() {
+//   return authStore.isAuthenticated
+// }
+
+const fetchFavourites = async () => {
+  if (!userId) return
+
+  try {
+    const { data } = await axios.get(`/favourites?user_id=${userId}`)
+    // console.log(data)
+    isFavourite.value = data.some(fav => fav.flat_id == route.params.id)
+    // console.log(isFavourite.value)
+  } catch (error) {
+    console.error('Ошибка при получении избранного:', error)
+  } finally {
+    isLoading.value = false
+  }
+}
+
+const toggleFavourite = async () => {
+  if (!userId) {
+    alert('Сначала авторизуйтесь!')
+    return
+  }
+
+  try {
+    if (isFavourite.value) {
+      let data = await axios.delete('/favourites', {
+        data: {
+          user_id: userId,
+          flat_id: route.params.id
+        }
+      })
+
+      isFavourite.value = false
+
+      alert(data.data.message)
+    } else {
+      let data = await axios.post('/favourites', {
+        user_id: Number(userId),
+        flat_id: Number(route.params.id),
+      })
+
+      isFavourite.value = true
+
+      alert(data.data.message)
+    }
+  } catch (error) {
+    console.error('Ошибка при обновлении избранного:', error)
+  }
+}
 
 function numberWithSpaces(x) {
   return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')
@@ -30,23 +100,42 @@ async function fetchFlat() {
   }
 }
 
-function toggleFavourite() {
-  isFavourite.value = !isFavourite.value
-}
+// async function toggleFavourite() {
+//   if (!isUserAuthenticated()) {
+//     alert('Пожалуйста, авторизуйтесь, чтобы добавить квартиру в избранное.')
+//     return
+//   }
+
+//   try {
+//     if (isFavourite.value) {
+//       await axios.delete(`/profile/favourites/${flat.value.id}`)
+//       isFavourite.value = false
+//     } else {
+//       await axios.post(`/profile/favourites/${flat.value.id}`)
+//       isFavourite.value = true
+//     }
+//   } catch (error) {
+//     console.error('Ошибка изменения состояния избранного:', error)
+//   }
+// }
 
 function goBack() {
   router.back()
 }
 
-function openChatWithPrefilledMessage() {
-  if (flat.value) {
-    prefilledMessage.value = `Здравствуйте! Хочу узнать подробнее о квартире №${flat.value.id} (${flat.value.square_meters}м²) стоимостью ${numberWithSpaces(flat.value.price_current)} ₽.`
-    showChat.value = true
-  }
-}
+// function openChatWithPrefilledMessage() {
+//   if (flat.value) {
+//     prefilledMessage.value = `Здравствуйте! Хочу узнать подробнее о квартире №${flat.value.id} (${flat.value.square_meters}м²) стоимостью ${numberWithSpaces(flat.value.price_current)} ₽.`
+//     showChat.value = true
+//   }
+// }
 
 onMounted(() => {
-  fetchFlat()
+  fetchFlat(),
+    fetchFavourites()
+  // if (isUserAuthenticated()) {
+  //   checkIfFavourite()
+  // }
 })
 </script>
 

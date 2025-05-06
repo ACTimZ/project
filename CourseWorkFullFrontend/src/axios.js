@@ -1,7 +1,26 @@
+// import axios from 'axios'
+
+// const axiosInstance = axios.create({
+//   baseURL: 'http://localhost:8000/api',
+//   withCredentials: true,
+//   headers: {
+//     'X-Requested-With': 'XMLHttpRequest',
+//     'Content-Type': 'application/json',
+//     'Accept': 'application/json',
+//   },
+// })
+
+// axiosInstance.interceptors.request.use(config => {
+//   const matches = document.cookie.match(new RegExp('(^| )XSRF-TOKEN=([^;]+)'))
+//   if (matches) {
+//     config.headers['X-XSRF-TOKEN'] = decodeURIComponent(matches[2])
+//   }
+//   return config
+// })
+
 import axios from 'axios'
 
 const axiosInstance = axios.create({
-  baseURL: 'http://localhost:8000/api',
   withCredentials: true,
   headers: {
     'X-Requested-With': 'XMLHttpRequest',
@@ -11,13 +30,20 @@ const axiosInstance = axios.create({
 })
 
 axiosInstance.interceptors.request.use(config => {
+  if (
+    ['/login', '/register', '/logout', '/sanctum/csrf-cookie'].some(path => config.url.startsWith(path))
+  ) {
+    config.baseURL = 'http://localhost:8000'
+  } else {
+    config.baseURL = 'http://localhost:8000/api'
+  }
+
   const matches = document.cookie.match(new RegExp('(^| )XSRF-TOKEN=([^;]+)'))
   if (matches) {
     config.headers['X-XSRF-TOKEN'] = decodeURIComponent(matches[2])
   }
   return config
 })
-
 
 let isRefreshing = false
 let failedQueue = []

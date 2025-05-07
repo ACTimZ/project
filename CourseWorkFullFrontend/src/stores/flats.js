@@ -10,9 +10,21 @@ export let useFlatsStore = defineStore('flats', {
   }),
 
   actions: {
-    async fetchFlats(page = 1) {
+    // async fetchFlats(page = 1) {
+    //   try {
+    //     const response = await axios.get(`/flats?page=${page}`)
+    //     this.flats = response.data.data
+    //     this.currentPage = response.data.current_page
+    //     this.totalPages = response.data.last_page
+    //   } catch (error) {
+    //     console.error('Ошибка загрузки квартир:', error)
+    //   }
+    // },
+    async fetchFlats(page = 1, filters = {}) {
       try {
-        const response = await axios.get(`/flats?page=${page}`)
+        const params = { page, ...filters }
+
+        const response = await axios.get('/flats', { params })
         this.flats = response.data.data
         this.currentPage = response.data.current_page
         this.totalPages = response.data.last_page
@@ -28,6 +40,30 @@ export let useFlatsStore = defineStore('flats', {
         return response.data
       } catch (error) {
         console.error('Ошибка получения квартиры:', error)
+        throw error
+      }
+    },
+
+    async createFlat(flatData) {
+      try {
+        const response = await axios.post('/flats', flatData, {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+        return response.data
+      } catch (error) {
+        console.error('Ошибка при создании квартиры:', error)
+        throw error
+      }
+    },
+
+    async updateFlat(id, flatData) {
+      try {
+        const response = await axios.put(`/flats/${id}`, flatData)
+        return response.data
+      } catch (error) {
+        console.error('Ошибка при обновлении квартиры вот:', error.response?.data.errors || error)
         throw error
       }
     },

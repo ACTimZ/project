@@ -1,210 +1,148 @@
 <script setup>
-import { ref } from 'vue'
-import ChatModal from '@/components/ModalWindows/ChatModal.vue'
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import axios from '@/axios'
 import HeaderComponent from '@/components/Header/HeaderComponent.vue'
 import FooterComponent from '@/components/Footer/FooterComponent.vue'
 
-const activeTab = ref('flats')
+let router = useRouter()
+let activeTab = ref('flats')
+let flats = ref([])
+let isAdmin = ref(false)
 
-const tabs = [
-  { name: 'Квартиры', key: 'flats' },
-  { name: 'Пользователи', key: 'users' },
-  { name: 'Чаты', key: 'chats' },
-]
-
-const flats = ref([
-  { rooms: 2, area: 56, complex: 'Нирвана', price: 5500000 },
-  { rooms: 1, area: 35, complex: 'Солнечный берег', price: 3200000 },
-])
-
-const users = ref([
-  { firstName: 'Иван', lastName: 'Иванов', phone: '+79999999999', email: 'ivan@mail.ru' },
-  { firstName: 'Ольга', lastName: 'Петрова', phone: '+78888888888', email: 'olga@mail.ru' },
-])
-
-const chats = ref([
-  { name: 'Андрей', email: 'andrey@mail.ru', message: 'Здравствуйте!', isRead: true },
-  { name: 'Мария', email: 'maria@mail.ru', message: 'Когда будет ответ?', isRead: false },
-])
-
-const showChatModal = ref(false)
-const selectedChat = ref(null)
-
-function openChat(chat) {
-  selectedChat.value = chat
-  showChatModal.value = true
+try {
+  let user = JSON.parse(localStorage.getItem('user') || 'null')
+  let rights = user?.role ?? null
+  if (rights == "admin") {
+    isAdmin.value = true
+  } else {
+    setTimeout(() => {
+      router.push("/")
+    }, 5000);
+  }
+} catch {
+  isAdmin.value = false
 }
+
+let fetchFlats = async () => {
+  try {
+    let response = await axios.get('/flats?forAdmin=true')
+    flats.value = response.data
+    console.log(flats.value)
+  } catch (error) {
+    console.error('Ошибка при загрузке квартир:', error)
+  }
+}
+
+let deleteFlat = async (id) => {
+  try {
+    await axios.delete(`/flats/${id}`)
+    flats.value = flats.value.filter(flat => flat.id !== id)
+    alert(`Квартира №${id} удалена!`)
+  } catch (error) {
+    console.error('Ошибка при удалении квартиры:', error)
+  }
+}
+
+let goToEdit = (id) => {
+  router.push(`/flats/${id}/edit`)
+}
+
+let goToView = (id) => {
+  router.push(`/flat/${id}`)
+}
+
+let goToCreate = () => {
+  router.push('/admin/flats/create')
+}
+
+onMounted(fetchFlats)
+
+let tabs = [
+  { name: 'Квартиры', key: 'flats' },
+  { name: 'Обращения', key: 'requests' },
+]
 
 function numberWithSpaces(x) {
   return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+}
+
+function formatDate(dateString) {
+  let date = new Date(dateString);
+
+  let options = {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+    timeZone: 'Europe/Moscow',
+  };
+
+  return new Intl.DateTimeFormat('ru-RU', options).format(date);
 }
 </script>
 
 <template>
   <HeaderComponent />
-  <ChatModal
-    :visible="showChatModal"
-    :chatUser="selectedChat"
-    :isAdminView="true"
-    @close="showChatModal = false"
-  />
-
-  <section class="container mx-auto p-4 my-5">
-    <!-- Tabs -->
-    <article class="flex flex-wrap gap-4 justify-center mb-6">
-      <button
-        v-for="tab in tabs"
-        :key="tab.key"
-        @click="activeTab = tab.key"
-        :class="[
-          'px-4 py-2 rounded-lg text-lg font-semibold transition-colors duration-200 shadow-sm',
-          activeTab === tab.key
-            ? 'bg-indigo-600 text-white hover:bg-indigo-700'
-            : 'bg-indigo-100 text-indigo-900 hover:bg-indigo-200',
-        ]"
-      >
+  <section class="container mx-auto p-4 my-6" v-if="isAdmin">
+    <article class="flex justify-center gap-4 mb-4">
+      <button v-for="tab in tabs" :key="tab.key" @click="activeTab = tab.key" :class="[
+        'px-4 py-2 rounded-xl text-lg font-semibold',
+        activeTab === tab.key
+          ? 'bg-indigo-600 text-white'
+          : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+      ]">
         {{ tab.name }}
       </button>
     </article>
 
-    <article class="flex flex-col lg:flex-row gap-6">
-      <!-- Фильтр только для квартир -->
-      <aside
-        v-if="activeTab === 'flats'"
-        class="w-full lg:w-1/4 bg-white rounded-xl p-4 shadow-md h-fit"
-      >
-        <h3 class="text-lg font-semibold mb-4">Фильтр</h3>
-        <article class="flex flex-col gap-4">
-          <input
-            type="text"
-            placeholder="ЖК"
-            class="w-full border border-gray-300 rounded-xl bg-gray-50 p-3 text-md focus:outline-none focus:border-gray-500 focus:bg-white;"
-          />
-          <input
-            type="number"
-            placeholder="Количество комнат"
-            class="w-full border border-gray-300 rounded-xl bg-gray-50 p-3 text-md focus:outline-none focus:border-gray-500 focus:bg-white;"
-          />
-          <input
-            type="number"
-            placeholder="Цена"
-            class="w-full border border-gray-300 rounded-xl bg-gray-50 p-3 text-md focus:outline-none focus:border-gray-500 focus:bg-white;"
-          />
-          <input
-            type="number"
-            placeholder="Кв. метры"
-            class="w-full border border-gray-300 rounded-xl bg-gray-50 p-3 text-md focus:outline-none focus:border-gray-500 focus:bg-white;"
-          />
-        </article>
-      </aside>
+    <article v-if="activeTab === 'flats'" class="text-right mb-4">
+      <button @click="goToCreate"
+        class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition font-medium cursor-pointer">
+        Создать квартиру
+      </button>
+    </article>
+    <table v-if="activeTab === 'flats'" class="w-full bg-white shadow-md rounded-xl overflow-hidden">
+      <thead class="bg-sky-100">
+        <tr>
+          <th class="px-4 py-3 text-center">ID</th>
+          <th class="px-4 py-3 text-center">Изменено в</th>
+          <th class="px-4 py-3 text-center">Количество комнат</th>
+          <th class="px-4 py-3 text-center">Название ЖК</th>
+          <th class="px-4 py-3 text-center">Текущая цена</th>
+          <th class="px-4 py-3 text-center">Действие</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="item_flat in flats" :key="item_flat.id" class="border-b border-stone-200 hover:bg-stone-50">
+          <td class="px-4 py-3 text-center">{{ item_flat.id }}</td>
+          <td class="px-4 py-3 text-center">{{ formatDate(item_flat.updated_at) }}</td>
+          <td class="px-4 py-3 text-center">{{ item_flat.rooms_count }}</td>
+          <td class="px-4 py-3 text-center">{{ item_flat.housing_complex }}</td>
+          <td class="px-4 py-3 text-center">{{ numberWithSpaces(item_flat.price_current.toLocaleString()) }} ₽</td>
+          <td class="px-4 py-3">
+            <div class="flex justify-center items-center gap-2">
+              <button @click="goToView(item_flat.id)"
+                class="bg-sky-100 text-blue-800 px-3 py-1 rounded hover:bg-blue-200 text-sm cursor-pointer transition font-medium">Просмотр</button>
+              <button @click="goToEdit(item_flat.id)"
+                class="bg-orange-100 text-orange-800 px-3 py-1 rounded hover:bg-orange-300 text-sm cursor-pointer transition font-medium">Изменить</button>
+              <button @click="deleteFlat(item_flat.id)"
+                class="bg-red-100 text-red-800 px-3 py-1 rounded hover:bg-red-700 hover:text-white text-sm cursor-pointer transition font-medium">Удалить</button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
 
-      <!-- Таблица данных -->
-      <article class="w-full overflow-x-auto">
-        <table class="w-full table-auto border-collapse rounded-xl overflow-hidden">
-          <thead class="bg-indigo-100 text-indigo-900">
-            <tr>
-              <th class="px-4 py-3 text-left" v-if="activeTab === 'flats'">Комнаты</th>
-              <th class="px-4 py-3 text-left" v-if="activeTab === 'flats'">Площадь</th>
-              <th class="px-4 py-3 text-left" v-if="activeTab === 'flats'">ЖК</th>
-              <th class="px-4 py-3 text-left" v-if="activeTab === 'flats'">Цена</th>
-              <th class="px-4 py-3 text-left" v-if="activeTab === 'users'">Имя</th>
-              <th class="px-4 py-3 text-left" v-if="activeTab === 'users'">Фамилия</th>
-              <th class="px-4 py-3 text-left" v-if="activeTab === 'users'">Телефон</th>
-              <th class="px-4 py-3 text-left" v-if="activeTab === 'users'">Почта</th>
-              <th class="px-4 py-3 text-left" v-if="activeTab === 'chats'">Имя</th>
-              <th class="px-4 py-3 text-left" v-if="activeTab === 'chats'">Почта</th>
-              <th class="px-4 py-3 text-left" v-if="activeTab === 'chats'">Сообщение</th>
-              <th class="px-4 py-3 text-left" v-if="activeTab === 'chats'">Статус</th>
-              <th class="px-4 py-3 text-left">Действия</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              v-for="(item, index) in activeTab === 'flats'
-                ? flats
-                : activeTab === 'users'
-                  ? users
-                  : chats"
-              :key="index"
-              class="border-b last:border-0 hover:bg-gray-50"
-            >
-              <!-- Flats -->
-              <td class="px-4 py-3" v-if="activeTab === 'flats'">{{ item.rooms }}</td>
-              <td class="px-4 py-3" v-if="activeTab === 'flats'">{{ item.area }}</td>
-              <td class="px-4 py-3" v-if="activeTab === 'flats'">{{ item.complex }}</td>
-              <td class="px-4 py-3" v-if="activeTab === 'flats'">
-                {{ numberWithSpaces(item.price) }} ₽
-              </td>
-
-              <!-- Users -->
-              <td class="px-4 py-3" v-if="activeTab === 'users'">{{ item.firstName }}</td>
-              <td class="px-4 py-3" v-if="activeTab === 'users'">{{ item.lastName }}</td>
-              <td class="px-4 py-3" v-if="activeTab === 'users'">{{ item.phone }}</td>
-              <td class="px-4 py-3" v-if="activeTab === 'users'">{{ item.email }}</td>
-
-              <!-- Chats -->
-              <td class="px-4 py-3" v-if="activeTab === 'chats'">{{ item.name }}</td>
-              <td class="px-4 py-3" v-if="activeTab === 'chats'">{{ item.email }}</td>
-              <td class="px-4 py-3" v-if="activeTab === 'chats'">{{ item.message }}</td>
-              <td class="px-4 py-3" v-if="activeTab === 'chats'">
-                <span
-                  :class="item.isRead ? 'bg-green-200 text-green-800' : 'bg-gray-200 text-gray-800'"
-                  class="px-2 py-1 rounded-lg text-sm"
-                >
-                  {{ item.isRead ? 'Прочитано' : 'Не прочитано' }}
-                </span>
-              </td>
-
-              <!-- Actions -->
-              <td class="px-4 py-3 flex gap-2">
-                <template v-if="activeTab === 'flats'">
-                  <button
-                    class="px-3 py-1 rounded-md bg-red-100 text-red-800 text-sm hover:bg-red-200 transition-colors duration-200 shadow-sm"
-                  >
-                    Удалить
-                  </button>
-
-                  <button
-                    class="px-3 py-1 rounded-md bg-yellow-100 text-yellow-800 text-sm hover:bg-yellow-200 transition-colors duration-200 shadow-sm"
-                  >
-                    Редактировать
-                  </button>
-                  <button
-                    class="px-3 py-1 rounded-md bg-indigo-100 text-indigo-800 text-sm hover:bg-indigo-200 transition-colors duration-200 shadow-sm"
-                  >
-                    Просмотр
-                  </button>
-                </template>
-                <template v-else-if="activeTab === 'users'">
-                  <button
-                    class="px-3 py-1 rounded-md bg-red-100 text-red-800 text-sm hover:bg-red-200 transition-colors duration-200 shadow-sm"
-                  >
-                    Удалить
-                  </button>
-                </template>
-                <template v-else-if="activeTab === 'chats'">
-                  <button
-                    @click="openChat(item)"
-                    class="px-3 py-1 rounded-md bg-indigo-100 text-indigo-800 text-sm hover:bg-indigo-200 transition-colors duration-200 shadow-sm"
-                  >
-                    Взаимодействовать
-                  </button>
-                </template>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-
-        <!-- Прогрузить еще -->
-        <article class="text-center mt-6">
-          <button
-            class="text-lg font-semibold text-indigo-900 hover:text-indigo-700 transition duration-200 hover:underline"
-          >
-            Прогрузить еще
-          </button>
-        </article>
-      </article>
+    <article v-if="activeTab === 'requests'" class="text-center text-gray-600 mt-10">
+      Здесь пока ничего нет. Раздел "Обращения" в разработке.
     </article>
   </section>
+  <section v-else class="text-center text-3xl mt-25 mb-50 font-bold">
+    Вы не обладаете правами админа!
+  </section>
+
   <FooterComponent />
 </template>

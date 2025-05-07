@@ -16,6 +16,10 @@ Route::get('/favourites', [FavoriteController::class, 'index']);
 Route::post('/favourites', [FavoriteController::class, 'store']);
 Route::delete('/favourites', [FavoriteController::class, 'destroy']);
 
+Route::post('/flats', [FlatController::class, 'store']);
+Route::put('/flats/{flat}', [FlatController::class, 'update']);
+Route::delete('/flats/{flat}', [FlatController::class, 'destroy']);
+
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/profile', [ProfileController::class, 'show']);
 });
@@ -26,11 +30,4 @@ Route::middleware(['auth:sanctum', 'is.admin'])->prefix('admin')->group(function
     Route::get('/', [AdminController::class, 'dashboard']);
 
     // Управление квартирами
-    Route::post('/flats', [FlatController::class, 'store']);
-    Route::put('/flats/{flat}', [FlatController::class, 'update']);
-    Route::delete('/flats/{flat}', [FlatController::class, 'destroy']);
-
-    // Управление пользователями
-    Route::get('/users', [AdminController::class, 'users']);
-    Route::delete('/users/{user}', [AdminController::class, 'deleteUser']);
 });

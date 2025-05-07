@@ -7,6 +7,8 @@ import ProfilePage from '@/views/ProfilePage.vue'
 import AdminPanelPage from '@/views/AdminPanelPage.vue'
 import FavouritesPage from '@/views/FavouritesPage.vue'
 import FlatPage from '@/views/FlatPage.vue'
+import FlatCreatePage from '@/views/FlatCreatePage.vue'
+import FlatEditPage from '@/views/FlatEditPage.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -40,6 +42,16 @@ const router = createRouter({
       path: '/profile/admin',
       name: 'admin',
       component: AdminPanelPage,
+    },
+    {
+      path: '/admin/flats/create',
+      name: 'FlatCreate',
+      component: FlatCreatePage
+    },
+    {
+      path: '/flats/:id/edit',
+      name: 'FlatEdit',
+      component: FlatEditPage
     },
     {
       path: '/profile/favourites',

@@ -1,17 +1,26 @@
 <script setup>
-import { useAuthStore } from '@/stores/auth'
+// import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
-import AppealsAboutFlatsComponent from './AppealsAboutFlatsComponent.vue'
+// import AppealsAboutFlatsComponent from './AppealsAboutFlatsComponent.vue'
 import FeedbackFormComponent from './FeedbackFormComponent.vue'
 import PersonalInformationComponent from './PersonalInformationComponent.vue'
+import { onMounted, ref } from 'vue'
 
-const authStore = useAuthStore()
-const router = useRouter()
+// let authStore = useAuthStore()
+let router = useRouter()
+let role = ref("")
 
-const logout = async () => {
-  await authStore.logout()
-  router.push('/')
+let logout = async () => {
+  localStorage.removeItem("user")
+  // await authStore.logout()
+  await router.push('/')
+  window.location.reload()
 }
+
+onMounted(() => {
+  let isAuth = JSON.parse(localStorage.getItem('user') || 'null')
+  role.value = isAuth ? isAuth.role : false
+})
 </script>
 
 <template>
@@ -29,13 +38,16 @@ const logout = async () => {
       >
         Выйти
       </button>
+      <router-link to="/profile/admin" class="px-3 bg-teal-700 py-2 rounded-xl font-medium text-white" v-if="role == 'admin'">
+        Админ-панель
+      </router-link>
     </article>
 
     <article
-      class="flex flex-col gap-17.5 md:mt-[-15px] mt-5 sm:mx-15 mx-5 xl:mb-20 lg:mb-15 mb-10"
+      class="flex flex-col gap-25 md:mt-[-15px] mt-5 sm:mx-15 mx-5 xl:mb-20 lg:mb-15 mb-10"
     >
       <PersonalInformationComponent />
-      <AppealsAboutFlatsComponent />
+      <!-- <AppealsAboutFlatsComponent /> -->
       <FeedbackFormComponent />
     </article>
   </section>

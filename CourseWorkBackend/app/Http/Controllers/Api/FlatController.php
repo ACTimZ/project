@@ -44,7 +44,11 @@ class FlatController extends Controller
             $query->where('has_balcony', $request->has_balcony);
         }
 
-        $flats = $query->paginate(10);
+        if ($request->boolean('forAdmin')) {
+            $flats = $query->get();
+        } else {
+            $flats = $query->paginate(10);
+        }
 
         return response()->json($flats);
     }
@@ -63,27 +67,24 @@ class FlatController extends Controller
             'floors_in_house' => 'required|integer|min:1',
             'housing_complex' => 'required|string|max:255',
             'price_current' => 'required|numeric|min:0',
+            'price_start' => 'required|numeric|min:0',
             'has_balcony' => 'required|boolean',
             'bathroom_combined' => 'required|boolean',
-            'house_type' => 'required|in:brick,panel,aerated_concrete',
+            'house_type' => 'required|in:Кирпичный,Панельный,Газобетонный',
             'description' => 'required|string',
-            'images' => 'required|array|size:4',
-            'images.*' => 'required|image|mimes:jpeg,png,jpg|max:2048'
+            'images' => 'array',
+            'images.*' => 'string|url',
         ]);
 
-        $imagePaths = [];
-        if ($request->hasFile('images')) {
-            foreach ($request->file('images') as $image) {
-                $path = $image->store('flats', 'public');
-                $imagePaths[] = $path;
-            }
-        }
+        // $imagePaths = [];
+        // if ($request->hasFile('images')) {
+        //     foreach ($request->file('images') as $image) {
+        //         $path = $image->store('flats', 'public');
+        //         $imagePaths[] = $path;
+        //     }
+        // }
 
-        $flat = Flat::create([
-            ...$request->except('images'),
-            'price_start' => $request->price_current,
-            'images' => $imagePaths
-        ]);
+        $flat = Flat::create($request->all());
 
         return response()->json($flat, 201);
     }
@@ -99,24 +100,24 @@ class FlatController extends Controller
             'price_current' => 'sometimes|required|numeric|min:0',
             'has_balcony' => 'sometimes|required|boolean',
             'bathroom_combined' => 'sometimes|required|boolean',
-            'house_type' => 'sometimes|required|in:brick,panel,aerated_concrete',
+            'house_type' => 'sometimes|required|in:Кирпичный,Панельный,Газобетонный',
             'description' => 'sometimes|required|string',
-            'images' => 'sometimes|array|size:4',
-            'images.*' => 'sometimes|image|mimes:jpeg,png,jpg|max:2048'
+            'images' => 'array',
+            'images.*' => 'string|url',
         ]);
 
-        if ($request->hasFile('images')) {
-            foreach ($flat->images as $oldImage) {
-                Storage::disk('public')->delete($oldImage);
-            }
+        // if ($request->hasFile('images')) {
+        //     foreach ($flat->images as $oldImage) {
+        //         Storage::disk('public')->delete($oldImage);
+        //     }
 
-            $imagePaths = [];
-            foreach ($request->file('images') as $image) {
-                $path = $image->store('flats', 'public');
-                $imagePaths[] = $path;
-            }
-            $request->merge(['images' => $imagePaths]);
-        }
+        //     $imagePaths = [];
+        //     foreach ($request->file('images') as $image) {
+        //         $path = $image->store('flats', 'public');
+        //         $imagePaths[] = $path;
+        //     }
+        //     $request->merge(['images' => $imagePaths]);
+        // }
 
         $flat->update($request->all());
         return response()->json($flat);

@@ -5,23 +5,47 @@ import ChatModal from '@/components/ModalWindows/ChatModal.vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ref, onMounted } from 'vue'
 import axios from '@/axios'
+import gsap from 'gsap'
 
 // import { useAuthStore } from '@/stores/auth'
-// const authStore = useAuthStore()
+// let authStore = useAuthStore()
 
-const flat = ref(null)
-const isLoading = ref(true)
-// const showChat = ref(false)
-// const prefilledMessage = ref('')
-const isFavourite = ref(false)
+let flat = ref(null)
+let isLoading = ref(true)
+// let showChat = ref(false)
+// let prefilledMessage = ref('')
+let isFavourite = ref(false)
 
-const router = useRouter()
-const route = useRoute()
-const userId = JSON.parse(localStorage.getItem('user')).id
+let router = useRouter()
+let route = useRoute()
+
+let userIsAuth = JSON.parse(localStorage.getItem('user') || 'null')
+let userId = userIsAuth?.id ?? "NaN"
+
+let hoverInImageFlat = (e) => {
+  gsap.to(e.currentTarget, {
+    duration: 0.4,
+    scale: 1.1,
+    boxShadow: '0 0 0 4px white',
+    zIndex: 150,
+    ease: 'power2.out',
+    transformOrigin: 'center center'
+  });
+};
+
+let hoverOutImageFlat = (e) => {
+  gsap.to(e.currentTarget, {
+    duration: 0.4,
+    scale: 1,
+    boxShadow: '0 0 0 0 white',
+    zIndex: 1,
+    ease: 'power2.inOut'
+  });
+};
 
 // async function checkIfFavourite() {
 //   try {
-//     const response = await axios.get('/profile/favourites')
+//     let response = await axios.get('/profile/favourites')
 //     isFavourite.value = response.data.some(fav => fav.flat_id === flat.value.id)
 //   } catch (error) {
 //     console.log("Ответ:")
@@ -37,11 +61,11 @@ const userId = JSON.parse(localStorage.getItem('user')).id
 //   return authStore.isAuthenticated
 // }
 
-const fetchFavourites = async () => {
-  if (!userId) return
+let fetchFavourites = async () => {
+  if (userId == "NaN") return
 
   try {
-    const { data } = await axios.get(`/favourites?user_id=${userId}`)
+    let { data } = await axios.get(`/favourites?user_id=${userId}`)
     // console.log(data)
     isFavourite.value = data.some(fav => fav.flat_id == route.params.id)
     // console.log(isFavourite.value)
@@ -52,8 +76,8 @@ const fetchFavourites = async () => {
   }
 }
 
-const toggleFavourite = async () => {
-  if (!userId) {
+let toggleFavourite = async () => {
+  if (userId == "NaN") {
     alert('Сначала авторизуйтесь!')
     return
   }
@@ -91,7 +115,7 @@ function numberWithSpaces(x) {
 
 async function fetchFlat() {
   try {
-    const response = await axios.get(`/flats/${route.params.id}`)
+    let response = await axios.get(`/flats/${route.params.id}`)
     flat.value = response.data
   } catch (error) {
     console.error('Ошибка загрузки данных о квартире:', error)
@@ -137,6 +161,22 @@ onMounted(() => {
   //   checkIfFavourite()
   // }
 })
+
+function formatDate(dateString) {
+  let date = new Date(dateString);
+
+  let options = {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+    timeZone: 'Europe/Moscow',
+  };
+
+  return new Intl.DateTimeFormat('ru-RU', options).format(date);
+}
 </script>
 
 <template>
@@ -159,7 +199,7 @@ onMounted(() => {
             class="w-full aspect-video object-cover rounded-xl" />
           <div class="grid grid-cols-3 gap-2">
             <img v-for="(image, index) in flat.images?.slice(1)" :key="index" :src="image" alt="Превью"
-              class="w-full aspect-video object-cover rounded-xl" />
+              class="w-full aspect-video object-cover rounded-xl" @mouseenter="hoverInImageFlat" @mouseleave="hoverOutImageFlat"/>
           </div>
         </article>
 
@@ -167,7 +207,7 @@ onMounted(() => {
           <h2 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-indigo-900 leading-tight">
             {{ flat.rooms_count }}-к. квартира, {{ flat.square_meters }}м²,
             {{ flat.floor + '/' + flat.floors_in_house }} эт. <br />
-            ЖК {{ flat.housing_complex }}
+            ЖК "{{ flat.housing_complex }}"
           </h2>
 
           <article class="flex flex-col gap-5">
@@ -238,7 +278,7 @@ onMounted(() => {
               <p class="text-base sm:text-xl md:text-2xl font-bold">
                 {{ numberWithSpaces(flat.price_start) }} ₽
               </p>
-              <p class="text-xs sm:text-sm text-gray-500">(в момент {{ flat.created_at }})</p>
+              <p class="text-xs sm:text-sm text-gray-500">(в момент {{ formatDate(flat.created_at) }})</p>
             </div>
 
             <div v-if="flat.price_current != flat.price_start">
@@ -249,7 +289,7 @@ onMounted(() => {
                 {{ numberWithSpaces(flat.price_current) }} ₽
               </p>
               <p class="text-xs sm:text-sm text-gray-500">
-                (в момент {{ flat.updated_at }})
+                (в момент {{ formatDate(flat.updated_at) }})
               </p>
             </div>
           </div>

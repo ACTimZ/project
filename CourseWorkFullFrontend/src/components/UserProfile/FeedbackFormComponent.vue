@@ -17,17 +17,17 @@ onMounted(() => {
 
 const submitForm = async () => {
   if (!isAccepted.value) {
-    alert("Вы должны принять условия использования.")
+    alert("Вы должны принять условия использования!")
     return
   }
 
   if (!messageType.value) {
-    alert("Пожалуйста, выберите тип обращения.")
+    alert("Пожалуйста, выберите тип обращения!")
     return
   }
 
   if (message.value.length > 100) {
-    alert("Сообщение не должно превышать 100 символов.")
+    alert("Сообщение не должно превышать 100 символов!")
     return
   }
 
@@ -84,7 +84,6 @@ const submitForm = async () => {
         </p>
       </article>
       <article class="flex flex-col md:flex-row gap-4">
-        <!-- Левая часть: чекбокс с условиями -->
         <article class="w-full md:w-6/12 flex flex-row items-start gap-5">
           <input type="checkbox" v-model="isAccepted" id="checkbox_form_for_questions"
             class="md:w-5 md:h-5 w-7 h-7 border border-gray-300 rounded-sm text-sky-100 focus:ring-2 focus:ring-sky-100 mt-1.5"
@@ -97,7 +96,6 @@ const submitForm = async () => {
           </label>
         </article>
 
-        <!-- Правая часть: select -->
         <article class="w-full md:w-6/12 flex items-center">
           <select v-model="messageType" id="messageType" name="messageType"
             class="w-full border-1 border-gray-300 rounded-xl bg-gray-50 p-5 text-md text-gray-700 focus:outline-none focus:border-gray-500 focus:bg-white"

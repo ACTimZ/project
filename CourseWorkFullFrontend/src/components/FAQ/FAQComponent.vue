@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 
-const faqs = ref({
+let faqs = ref({
   'Вопросы о недвижимости': {
     'Как забронировать квартиру?': {
       answer:
@@ -57,28 +57,28 @@ const faqs = ref({
   },
 })
 
-const toggle = (category, question) => {
+let toggle = (category, question) => {
   faqs.value[category][question].open = !faqs.value[category][question].open
 }
 </script>
 
 <template>
-  <div class="max-w-7xl mx-auto px-4 py-8">
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-      <div
+  <article class="max-w-7xl mx-auto px-4 py-8">
+    <article class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+      <article
         v-for="(questions, category) in faqs"
         :key="category"
         class="bg-indigo-50 rounded-xl p-8 shadow-sm"
       >
         <h2 class="text-xl font-semibold mb-4">{{ category }}</h2>
 
-        <div class="space-y-2">
-          <div v-for="(item, question) in questions" :key="question" class="rounded-lg">
+        <article class="space-y-2">
+          <article v-for="(item, question) in questions" :key="question" class="rounded-lg">
             <button
               class="w-full flex items-start justify-between gap-2 py-2 px-3 hover:bg-indigo-100 rounded-lg"
               @click="toggle(category, question)"
             >
-              <div class="flex items-start gap-3">
+              <article class="flex items-start gap-3">
                 <!-- стрелка -->
                 <img
                   src="../icons/Arrow_for_faq.svg"
@@ -92,19 +92,19 @@ const toggle = (category, question) => {
                 <span class="text-sm text-left font-medium">
                   {{ question }}
                 </span>
-              </div>
+              </article>
             </button>
 
             <transition name="fade">
-              <div v-if="item.open" class="pl-7 pr-3 pb-3 text-sm text-gray-700">
+              <article v-if="item.open" class="pl-7 pr-3 pb-3 text-sm text-gray-700">
                 {{ item.answer }}
-              </div>
+              </article>
             </transition>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+          </article>
+        </article>
+      </article>
+    </article>
+  </article>
 </template>
 
 <style scoped>

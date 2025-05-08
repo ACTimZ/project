@@ -1,7 +1,7 @@
 <script setup>
 import { useAuthStore } from '@/stores/auth'
 
-const authStore = useAuthStore()
+let authStore = useAuthStore()
 </script>
 <template>
   <article class="flex flex-col items-center md:gap-7.5 gap-3 mt-[-50px]">

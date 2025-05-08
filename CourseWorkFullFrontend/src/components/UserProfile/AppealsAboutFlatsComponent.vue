@@ -13,8 +13,8 @@ let msgs = ref([
   { message: '', isAnswered: false, name: 'Павел Орлов', email: 'pavel@mail.ru' },
 ])
 
-const showChatModal = ref(false)
-const selectedChat = ref(null)
+let showChatModal = ref(false)
+let selectedChat = ref(null)
 
 function openChat(chat) {
   selectedChat.value = chat
@@ -33,7 +33,7 @@ function openChat(chat) {
   <article class="flex flex-col">
     <h2 class="font-bold lg:text-3xl sm:text-2xl text-lg self-center mb-5">Обращения</h2>
 
-    <div class="relative overflow-x-auto">
+    <article class="relative overflow-x-auto">
       <table class="w-full table-fixed">
         <thead class="text-lg uppercase text-gray-500">
           <tr>
@@ -75,7 +75,7 @@ function openChat(chat) {
           </tr>
         </tbody>
       </table>
-    </div>
+    </article>
 
     <button
       class="text-xl font-medium cursor-pointer hover:bg-indigo-100 self-center py-3 px-5 rounded-xl transition"

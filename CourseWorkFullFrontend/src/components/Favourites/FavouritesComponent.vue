@@ -164,7 +164,7 @@ function numberWithSpaces(x) {
                 <input type="email" :value="user.email" disabled
                   class="w-1/2 p-3 border border-gray-300 rounded-lg bg-gray-100" />
               </article>
-              <!-- сообщение опционально -->
+              <!-- сообщение -->
               <!--
           <textarea v-model="message" rows="3"
             class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 resize-none"

@@ -45,7 +45,6 @@ function sendMessage() {
     <article
       class="bg-white w-full max-w-2xl rounded-xl shadow-lg p-4 relative flex flex-col h-[80vh]"
     >
-      <!-- Header -->
       <article class="flex items-center justify-between border-b pb-3 mb-3">
         <article class="flex items-center gap-2">
           <article class="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
@@ -60,7 +59,6 @@ function sendMessage() {
         <button @click="close" class="text-xl text-gray-500 hover:text-black">&times;</button>
       </article>
 
-      <!-- Messages -->
       <article class="flex-1 overflow-y-auto space-y-4 px-1">
         <article
           v-for="(message, index) in messages"
@@ -83,7 +81,6 @@ function sendMessage() {
         </article>
       </article>
 
-      <!-- Input -->
       <form @submit.prevent="sendMessage" class="flex items-center gap-2 mt-4 pt-3 border-t">
         <input
           v-model="newMessage"

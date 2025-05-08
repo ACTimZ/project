@@ -26,7 +26,6 @@ class ChatController extends Controller
 
     public function show(Chat $chat, Request $request)
     {
-        // Проверяем права доступа к чату
         if ($chat->user_id !== $request->user()->id && !$request->user()->isAdmin()) {
             return response()->json(['message' => 'Доступ запрещен'], 403);
         }
@@ -45,18 +44,15 @@ class ChatController extends Controller
             'message' => 'required|string|max:1000'
         ]);
 
-        // Находим админа для чата
         $admin = User::where('role', 'admin')->first();
 
         DB::beginTransaction();
         try {
-            // Создаем чат или получаем существующий
             $chat = Chat::firstOrCreate([
                 'user_id' => $request->user()->id,
                 'flat_id' => $request->flat_id
             ]);
 
-            // Создаем сообщение
             $message = $chat->messages()->create([
                 'user_id' => $request->user()->id,
                 'content' => $request->message

@@ -46,7 +46,7 @@ import FooterComponent from '@/components/Footer/FooterComponent.vue'
     >
       Мы на карте
     </h1>
-    <div class="self-center w-12/12 lg:mb-25 mb-10 flex flex-row justify-center">
+    <article class="self-center w-12/12 lg:mb-25 mb-10 flex flex-row justify-center">
       <iframe
         class="2xl:h-150 xl:h-120 lg:h-90 md:h-60 h-90 lg:w-12/12 sm:w-8/12 w-11/12"
         src="https://yandex.ru/map-widget/v1/?ll=31.272892%2C58.524143&z=15.68"
@@ -54,7 +54,7 @@ import FooterComponent from '@/components/Footer/FooterComponent.vue'
         allowfullscreen="true"
         style="position: relative"
       ></iframe>
-    </div>
+    </article>
   </main>
   <FooterComponent />
 </template>

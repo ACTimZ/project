@@ -3,26 +3,25 @@ import { ref, watch } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
 
-const visible = defineModel('visible')
-const authStore = useAuthStore()
-const router = useRouter()
+let visible = defineModel('visible')
+let authStore = useAuthStore()
+let router = useRouter()
 
-const showRegister = ref(false)
-const showLogin = ref(false)
-const error = ref('')
+let showRegister = ref(false)
+let showLogin = ref(false)
+let error = ref('')
 
 watch(
   visible,
   (newVal) => {
     showRegister.value = newVal
     if (!newVal) showLogin.value = false
-    error.value = '' // Сбрасываем ошибку при переключении окон
+    error.value = ''
   },
   { immediate: true },
 )
 
-// Форма регистрации
-const registerForm = ref({
+let registerForm = ref({
   first_name: '',
   last_name: '',
   email: '',
@@ -32,25 +31,25 @@ const registerForm = ref({
   agree: false,
 })
 
-const loginForm = ref({
+let loginForm = ref({
   email: '',
   password: ''
 })
 
-const toggleModal = () => {
+let toggleModal = () => {
   showRegister.value = !showRegister.value
   showLogin.value = !showLogin.value
-  error.value = '' // Сбрасываем ошибку при переключении окон
+  error.value = ''
 }
 
-const closeModal = () => {
+let closeModal = () => {
   showRegister.value = false
   showLogin.value = false
   visible.value = false
   error.value = ''
 }
 
-const submitRegister = async () => {
+let submitRegister = async () => {
   try {
     error.value = ''
     if (!registerForm.value.agree) {
@@ -60,18 +59,18 @@ const submitRegister = async () => {
 
     await authStore.register(registerForm.value)
     closeModal()
-    router.push('/profile') // Перенаправляем на профиль после успешной регистрации
+    router.push('/profile')
   } catch (e) {
     error.value = e.response?.data?.message || 'Ошибка при регистрации'
   }
 }
 
-const submitLogin = async () => {
+let submitLogin = async () => {
   try {
     error.value = ''
     await authStore.login(loginForm.value)
     closeModal()
-    router.push('/profile') // Перенаправляем на профиль после успешного входа
+    router.push('/profile')
   } catch (e) {
     error.value = e.response?.data?.message || 'Неверный email или пароль'
   }
@@ -80,13 +79,11 @@ const submitLogin = async () => {
 
 <template>
   <article>
-    <!-- Registration Modal -->
     <article v-if="showRegister" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
       <article class="w-full max-w-4xl bg-gray-100 rounded-xl relative xl:mx-60 sm:mx-15 mx-5 lg:pt-10 pt-5 pb-7 lg:px-26 px-5">
         <button @click="closeModal" class="absolute top-4 right-4 text-3xl cursor-pointer">&times;</button>
         <h2 class="self-center text-3xl font-bold text-center mb-6">Регистрация</h2>
 
-        <!-- Сообщение об ошибке -->
         <p v-if="error" class="text-red-500 text-center mb-4">{{ error }}</p>
 
         <form @submit.prevent="submitRegister" class="flex flex-col gap-5">
@@ -176,13 +173,11 @@ const submitLogin = async () => {
       </article>
     </article>
 
-    <!-- Login Modal -->
     <article v-if="showLogin" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
       <article class="w-full max-w-2xl bg-gray-100 rounded-xl relative xl:mx-60 sm:mx-15 mx-5 lg:pt-10 pt-5 pb-7 lg:px-26 px-10">
         <button @click="closeModal" class="absolute top-4 right-4 text-3xl cursor-pointer">&times;</button>
         <h2 class="text-3xl font-bold text-center mb-6">Авторизация</h2>
 
-        <!-- Сообщение об ошибке -->
         <p v-if="error" class="text-red-500 text-center mb-4">{{ error }}</p>
 
         <form @submit.prevent="submitLogin" class="flex flex-col gap-5">

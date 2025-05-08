@@ -45,7 +45,6 @@ class AdminController extends Controller
      */
     public function deleteFlat(Flat $flat)
     {
-        // Удаляем изображения
         foreach ($flat->images as $image) {
             Storage::disk('public')->delete($image);
         }
@@ -78,7 +77,6 @@ class AdminController extends Controller
             ], 403);
         }
 
-        // Удаляем связанные данные (избранное и чаты удалятся автоматически благодаря внешним ключам)
         $user->delete();
 
         return response()->json([

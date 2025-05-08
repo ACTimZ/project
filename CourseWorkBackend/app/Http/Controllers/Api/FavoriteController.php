@@ -42,7 +42,6 @@ class FavoriteController extends Controller
 
     //     $user = $request->user();
 
-    //     // Проверка на существование в избранном
     //     $existingFavorite = $user->favorites()
     //         ->where('flat_id', $validated['flat_id'])
     //         ->first();

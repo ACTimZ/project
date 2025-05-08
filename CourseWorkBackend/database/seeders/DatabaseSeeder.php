@@ -12,6 +12,7 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             FlatSeeder::class,
             FavoriteSeeder::class,
+            AppealSeeder::class,
         ]);
     }
 }

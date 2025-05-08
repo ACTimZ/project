@@ -11,12 +11,12 @@ let isAccepted = ref(false)
 
 let submitForm = async () => {
   if (!isAccepted.value) {
-    alert('Вы должны принять условия использования.')
+    alert('Вы должны принять условия использования!')
     return
   }
 
   if (message.value.length > 100) {
-    alert("Сообщение не должно превышать 100 символов.")
+    alert("Сообщение не должно превышать 100 символов!")
     return
   }
 

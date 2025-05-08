@@ -9,6 +9,17 @@ let router = useRouter()
 let activeTab = ref('flats')
 let flats = ref([])
 let isAdmin = ref(false)
+let appeals = ref([])
+
+let fetchAppeals = async () => {
+  try {
+    let response = await axios.get('/appeals')
+    appeals.value = response.data
+    console.log(response.value)
+  } catch (error) {
+    console.error('Ошибка при загрузке обращений:', error)
+  }
+}
 
 try {
   let user = JSON.parse(localStorage.getItem('user') || 'null')
@@ -28,7 +39,6 @@ let fetchFlats = async () => {
   try {
     let response = await axios.get('/flats?forAdmin=true')
     flats.value = response.data
-    console.log(flats.value)
   } catch (error) {
     console.error('Ошибка при загрузке квартир:', error)
   }
@@ -56,7 +66,10 @@ let goToCreate = () => {
   router.push('/admin/flats/create')
 }
 
-onMounted(fetchFlats)
+onMounted(() => {
+  fetchFlats()
+  fetchAppeals()
+})
 
 let tabs = [
   { name: 'Квартиры', key: 'flats' },
@@ -89,16 +102,16 @@ function formatDate(dateString) {
   <section class="container mx-auto p-4 my-6" v-if="isAdmin">
     <article class="flex justify-center gap-4 mb-4">
       <button v-for="tab in tabs" :key="tab.key" @click="activeTab = tab.key" :class="[
-        'px-4 py-2 rounded-xl text-lg font-semibold',
+        'px-6 py-2 rounded-xl text-lg font-semibold cursor-pointer transition',
         activeTab === tab.key
-          ? 'bg-indigo-600 text-white'
-          : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+          ? 'bg-indigo-900 text-white hover:bg-indigo-800'
+          : 'bg-indigo-100 text-indigo-900 hover:bg-indigo-200'
       ]">
         {{ tab.name }}
       </button>
     </article>
 
-    <article v-if="activeTab === 'flats'" class="text-right mb-4">
+    <article v-if="activeTab === 'flats'" class="text-right mb-4 mt-[-25px]">
       <button @click="goToCreate"
         class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition font-medium cursor-pointer">
         Создать квартиру
@@ -136,9 +149,29 @@ function formatDate(dateString) {
       </tbody>
     </table>
 
-    <article v-if="activeTab === 'requests'" class="text-center text-gray-600 mt-10">
-      Здесь пока ничего нет. Раздел "Обращения" в разработке.
+    <article v-if="activeTab === 'requests'">
+      <table class="w-full bg-white shadow-md rounded-xl overflow-hidden mt-12.5">
+        <thead class="bg-sky-100">
+          <tr>
+            <th class="px-4 py-3 text-center">Пользователь</th>
+            <th class="px-4 py-3 text-center">Контакты</th>
+            <th class="px-4 py-3 text-center">Тип сообщения</th>
+            <th class="px-4 py-3 text-center">Сообщение</th>
+            <th class="px-4 py-3 text-center">Создано</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="appeal in appeals" :key="appeal.id" class="border-b border-stone-200 transition" :class="[appeal.type == 'отзыв' ? 'bg-orange-50 hover:bg-orange-100' : appeal.type == 'квартира' ? 'bg-teal-50 hover:bg-teal-100' : 'hover:bg-stone-50']">
+            <td class="px-4 py-3 text-center">{{ appeal.first_name }} {{ appeal.last_name }}</td>
+            <td class="px-4 py-3 text-center whitespace-pre-line">{{ appeal.email + "\n" }}{{ appeal.phone }}</td>
+            <td class="px-4 py-3 text-center capitalize">{{ appeal.type }}</td>
+            <td class="px-4 py-3 text-center max-w-100">{{ appeal.message }}</td>
+            <td class="px-4 py-3 text-center">{{ formatDate(appeal.created_at) }}</td>
+          </tr>
+        </tbody>
+      </table>
     </article>
+
   </section>
   <section v-else class="text-center text-3xl mt-25 mb-50 font-bold">
     Вы не обладаете правами админа!

@@ -1,7 +1,7 @@
 <script setup>
 import HeaderComponent from '@/components/Header/HeaderComponent.vue'
 import FooterComponent from '@/components/Footer/FooterComponent.vue'
-import ChatModal from '@/components/ModalWindows/ChatModal.vue'
+// import ChatModal from '@/components/ModalWindows/ChatModal.vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ref, onMounted } from 'vue'
 import axios from '@/axios'
@@ -15,6 +15,11 @@ let isLoading = ref(true)
 // let showChat = ref(false)
 // let prefilledMessage = ref('')
 let isFavourite = ref(false)
+
+let showContactModal = ref(false)
+let message = ref('')
+let isAccepted = ref(false)
+let user = ref({})
 
 let router = useRouter()
 let route = useRoute()
@@ -157,6 +162,10 @@ function goBack() {
 onMounted(() => {
   fetchFlat(),
     fetchFavourites()
+  let savedUser = localStorage.getItem('user')
+  if (savedUser) {
+    user.value = JSON.parse(savedUser)
+  }
   // if (isUserAuthenticated()) {
   //   checkIfFavourite()
   // }
@@ -177,6 +186,46 @@ function formatDate(dateString) {
 
   return new Intl.DateTimeFormat('ru-RU', options).format(date);
 }
+
+function openContactModal() {
+  if (localStorage.getItem('user')) {
+    showContactModal.value = true
+  } else {
+    alert('Авторизуйтесь, прежде чем отправлять нам сообщения!')
+  }
+}
+
+async function submitContactForm() {
+  if (!isAccepted.value) {
+    alert("Вы должны принять условия использования!")
+    return
+  }
+
+  if (message.value.length > 100) {
+    alert("Сообщение не должно превышать 100 символов!")
+    return
+  }
+
+  try {
+    await axios.post('/appeals', {
+      first_name: user.value.first_name,
+      last_name: user.value.last_name,
+      phone: user.value.phone,
+      email: user.value.email,
+      type: 'квартира',
+      message: `Свяжитесь со мной по квартире №${flat.value.id}`
+    })
+
+    alert('Мы приняли Ваше сообщение! Ожидайте ответа в ближайшее время!')
+    message.value = ''
+    isAccepted.value = false
+    showContactModal.value = false
+  } catch (error) {
+    console.error(error)
+    alert('Ошибка при отправке обращения')
+  }
+}
+
 </script>
 
 <template>
@@ -197,10 +246,11 @@ function formatDate(dateString) {
         <article class="flex flex-col gap-4 w-full">
           <img :src="flat.images?.[0] || '../components/Images/FlatExample/Example_Flat.png'" alt="Главное фото"
             class="w-full aspect-video object-cover rounded-xl" />
-          <div class="grid grid-cols-3 gap-2">
+          <article class="grid grid-cols-3 gap-2">
             <img v-for="(image, index) in flat.images?.slice(1)" :key="index" :src="image" alt="Превью"
-              class="w-full aspect-video object-cover rounded-xl" @mouseenter="hoverInImageFlat" @mouseleave="hoverOutImageFlat"/>
-          </div>
+              class="w-full aspect-video object-cover rounded-xl" @mouseenter="hoverInImageFlat"
+              @mouseleave="hoverOutImageFlat" />
+          </article>
         </article>
 
         <article class="flex flex-col gap-8">
@@ -211,40 +261,40 @@ function formatDate(dateString) {
           </h2>
 
           <article class="flex flex-col gap-5">
-            <div class="flex flex-row items-end gap-4">
+            <article class="flex flex-row items-end gap-4">
               <p class="text-sm sm:text-base md:text-lg lg:text-xl">Цена:</p>
               <b class="text-base sm:text-xl md:text-2xl font-bold">
                 {{ numberWithSpaces(flat.price_current) }} ₽
               </b>
-            </div>
+            </article>
 
-            <div class="flex flex-row items-end gap-4">
+            <article class="flex flex-row items-end gap-4">
               <p class="text-sm sm:text-base md:text-lg lg:text-xl">Цена за м²:</p>
               <b class="text-base sm:text-xl md:text-2xl font-bold">
                 {{ numberWithSpaces(Math.floor(flat.price_current / flat.square_meters)) }} ₽
               </b>
-            </div>
+            </article>
 
-            <div class="flex flex-row items-end gap-4">
+            <article class="flex flex-row items-end gap-4">
               <p class="text-sm sm:text-base md:text-lg lg:text-xl">Балкон:</p>
               <b class="text-base sm:text-xl md:text-2xl font-bold">
                 {{ flat.has_balcony ? 'Есть' : 'Нет' }}
               </b>
-            </div>
+            </article>
 
-            <div class="flex flex-row items-end gap-4">
+            <article class="flex flex-row items-end gap-4">
               <p class="text-sm sm:text-base md:text-lg lg:text-xl">Совм. с/у:</p>
               <b class="text-base sm:text-xl md:text-2xl font-bold">
                 {{ flat.bathroom_combined ? 'Объединены' : 'Раздельный' }}
               </b>
-            </div>
+            </article>
 
-            <div class="flex flex-row items-end gap-4">
+            <article class="flex flex-row items-end gap-4">
               <p class="text-sm sm:text-base md:text-lg lg:text-xl">Тип дома:</p>
               <b class="text-base sm:text-xl md:text-2xl font-bold">
                 {{ flat.house_type }}
               </b>
-            </div>
+            </article>
           </article>
 
           <article class="flex flex-col sm:flex-row gap-4">
@@ -256,7 +306,7 @@ function formatDate(dateString) {
             ]">
               {{ isFavourite ? 'В избранном' : 'Добавить в избранное' }}
             </button>
-            <button @click="openChatWithPrefilledMessage"
+            <button @click="openContactModal"
               class="cursor-pointer border-2 border-orange-200 bg-orange-100 px-5 py-2 rounded-lg font-bold text-orange-900 hover:bg-orange-200 transition duration-300">
               Связаться
             </button>
@@ -272,16 +322,16 @@ function formatDate(dateString) {
 
         <article class="flex flex-col gap-3">
           <h3 class="text-lg sm:text-xl md:text-2xl font-bold">Изменение цены</h3>
-          <div class="flex flex-col gap-4">
-            <div>
+          <article class="flex flex-col gap-4">
+            <article>
               <h4 class="text-sm sm:text-base md:text-lg font-semibold mb-1">Цена на старте:</h4>
               <p class="text-base sm:text-xl md:text-2xl font-bold">
                 {{ numberWithSpaces(flat.price_start) }} ₽
               </p>
               <p class="text-xs sm:text-sm text-gray-500">(в момент {{ formatDate(flat.created_at) }})</p>
-            </div>
+            </article>
 
-            <div v-if="flat.price_current != flat.price_start">
+            <article v-if="flat.price_current != flat.price_start">
               <h4 class="text-sm sm:text-base md:text-lg font-semibold mb-1">
                 Текущая цена на момент изменения:
               </h4>
@@ -291,8 +341,8 @@ function formatDate(dateString) {
               <p class="text-xs sm:text-sm text-gray-500">
                 (в момент {{ formatDate(flat.updated_at) }})
               </p>
-            </div>
-          </div>
+            </article>
+          </article>
         </article>
       </article>
     </article>
@@ -301,6 +351,49 @@ function formatDate(dateString) {
       <p>Квартира не найдена.</p>
     </article>
   </main>
-  <ChatModal v-if="showChat" :visible="showChat" :initialMessage="prefilledMessage" @close="showChat = false" />
+  <teleport to="body">
+    <article v-if="showContactModal" class="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
+      <article class="bg-white rounded-xl py-8 px-6 w-full max-w-xl relative">
+        <button class="absolute top-3 right-4 text-xl font-bold" @click="showContactModal = false">×</button>
+
+        <h2 class="text-2xl font-bold mb-7 text-center text-indigo-900">
+          Мы свяжемся с Вами по квартире №{{ flat.id }}
+        </h2>
+
+        <article class="flex flex-col gap-4">
+          <article class="flex gap-4">
+            <input type="text" :value="user.first_name" disabled
+              class="w-1/2 p-3 border border-gray-300 rounded-lg bg-gray-100" />
+            <input type="text" :value="user.last_name" disabled
+              class="w-1/2 p-3 border border-gray-300 rounded-lg bg-gray-100" />
+          </article>
+          <article class="flex gap-4">
+            <input type="text" :value="user.phone" disabled
+              class="w-1/2 p-3 border border-gray-300 rounded-lg bg-gray-100" />
+            <input type="email" :value="user.email" disabled
+              class="w-1/2 p-3 border border-gray-300 rounded-lg bg-gray-100" />
+          </article>
+          <!-- сообщение опционально -->
+          <!--
+        <textarea v-model="message" rows="3"
+          class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 resize-none"
+          placeholder="Дополнительное сообщение (до 100 символов)">
+        </textarea>
+        -->
+          <label class="flex items-start flex-row text-sm">
+            <input type="checkbox" v-model="isAccepted" class="mt-1 me-3" />
+            Я принимаю <span class="text-orange-600 mx-1 font-medium">условия использования</span> и <span
+              class="text-orange-600 mx-1 font-medium">политику конфиденциальности</span>.
+          </label>
+          <button class="bg-orange-100 text-indigo-900 font-bold mt-5 py-2 rounded-lg hover:bg-orange-200 transition"
+            @click="submitContactForm">
+            Свяжитесь со мной
+          </button>
+        </article>
+      </article>
+    </article>
+  </teleport>
+
+  <!-- <ChatModal v-if="showChat" :visible="showChat" :initialMessage="prefilledMessage" @close="showChat = false" /> -->
   <FooterComponent />
 </template>

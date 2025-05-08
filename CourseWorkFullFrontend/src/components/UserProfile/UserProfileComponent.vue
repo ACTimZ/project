@@ -1,20 +1,18 @@
 <script setup>
-// import { useAuthStore } from '@/stores/auth'
+import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
 // import AppealsAboutFlatsComponent from './AppealsAboutFlatsComponent.vue'
 import FeedbackFormComponent from './FeedbackFormComponent.vue'
 import PersonalInformationComponent from './PersonalInformationComponent.vue'
 import { onMounted, ref } from 'vue'
 
-// let authStore = useAuthStore()
+let authStore = useAuthStore()
 let router = useRouter()
 let role = ref("")
 
 let logout = async () => {
-  localStorage.removeItem("user")
-  // await authStore.logout()
-  await router.push('/')
-  window.location.reload()
+  await authStore.logout()
+  router.push('/')
 }
 
 onMounted(() => {
@@ -46,6 +44,7 @@ onMounted(() => {
     <article
       class="flex flex-col gap-25 md:mt-[-15px] mt-5 sm:mx-15 mx-5 xl:mb-20 lg:mb-15 mb-10"
     >
+    <h1 v-if="role == 'admin' " class="text-center text-3xl font-bold mt-[-125px]">Вы - <span class="underline italic">админ</span></h1>
       <PersonalInformationComponent />
       <!-- <AppealsAboutFlatsComponent /> -->
       <FeedbackFormComponent />

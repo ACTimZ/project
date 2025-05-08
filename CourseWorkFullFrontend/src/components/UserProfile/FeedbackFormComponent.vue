@@ -109,7 +109,7 @@ const submitForm = async () => {
         </article>
       </article>
       <button type="submit"
-        class="self-center py-3.5 lg:px-6 md:px-2.5 px-8 bg-orange-100 lg:text-lg md:text-md text-lg font-bold text-indigo-900 rounded text-center lg:mt-3">
+        class="self-center py-3.5 lg:px-6 md:px-2.5 px-8 bg-orange-100 hover:bg-orange-200 lg:text-lg md:text-md text-lg font-bold text-indigo-900 rounded text-center lg:mt-3 cursor-pointer transition">
         Отправить
       </button>
     </form>

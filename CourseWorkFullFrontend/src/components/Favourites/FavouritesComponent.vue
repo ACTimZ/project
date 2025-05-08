@@ -145,7 +145,7 @@ function numberWithSpaces(x) {
       <teleport to="body">
         <article v-if="showContactModal" class="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
           <article class="bg-white rounded-xl py-8 px-6 w-full max-w-xl relative">
-            <button class="absolute top-3 right-4 text-xl font-bold" @click="showContactModal = false">×</button>
+            <button class="absolute top-3 right-4 text-xl font-bold cursor-pointer" @click="showContactModal = false">×</button>
 
             <h2 class="text-2xl font-bold mb-7 text-center text-indigo-900">
               Мы свяжемся с Вами по квартире №{{ selectedFlat?.id }}
@@ -177,7 +177,7 @@ function numberWithSpaces(x) {
                   class="text-orange-600 mx-1 font-medium">политику конфиденциальности</span>.
               </label>
               <button
-                class="bg-orange-100 text-indigo-900 font-bold mt-5 py-2 rounded-lg hover:bg-orange-200 transition"
+                class="bg-orange-100 text-indigo-900 font-bold mt-5 py-2 rounded-lg hover:bg-orange-200 transition cursor-pointer"
                 @click="submitContactForm">
                 Свяжитесь со мной
               </button>
@@ -262,7 +262,7 @@ function numberWithSpaces(x) {
               </p>
 
               <button @click="openContactModal(item_flat.flat)"
-                class="px-6 py-2 bg-orange-100 text-indigo-900 text-base sm:text-lg font-semibold rounded-md w-fit">
+                class="px-6 py-2 bg-orange-100 text-indigo-900 text-base sm:text-lg font-semibold rounded-md w-fit hover:bg-orange-200 transition cursor-pointer">
                 связаться
               </button>
 

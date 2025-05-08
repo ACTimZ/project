@@ -33,16 +33,16 @@
           </article>
 
           <button type="submit"
-            class="xl:self-end self-center font-medium rounded-lg lg:text-xl text-base px-7 pb-3 pt-2.5 bg-indigo-900 text-white">
+            class="xl:self-end self-center font-medium rounded-lg lg:text-xl text-base px-7 pb-3 pt-2.5 bg-indigo-900 text-white cursor-pointer transition hover:bg-indigo-800">
             применить
           </button>
         </form>
 
-        <button @click="toggleCollapse" class="absolute bottom-1.5 right-5 font-medium text-gray-600 hidden xl:block">
+        <button @click="toggleCollapse" class="absolute bottom-1.5 right-5 font-medium text-gray-600 hidden xl:block cursor-pointer">
           {{ isCollapsed ? 'развернуть' : 'свернуть' }}
         </button>
         <button @click="toggleCollapse"
-          class="absolute bottom-1.5 right-5 font-medium text-gray-600 text-3xl block xl:hidden">
+          class="absolute bottom-1.5 right-5 font-medium text-gray-600 text-3xl block xl:hidden cursor-pointer">
           {{ isCollapsed ? '˅' : '^' }}
         </button>
       </article>

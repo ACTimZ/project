@@ -1,88 +1,90 @@
 <template>
   <HeaderComponent/>
-  <article class="container mx-auto py-6" v-if="isAdmin">
-    <h1 class="text-2xl font-bold mb-4">Создание квартиры</h1>
+  <article class="container mx-auto py-6 mb-15" v-if="isAdmin">
+    <article class="lg:mx-75 md:mx-25 sm:mx-15 flex flex-col items-center">
+      <h1 class="text-2xl font-bold mb-4">Создание квартиры</h1>
 
-    <form @submit.prevent="handleSubmit" class="space-y-4">
-      <article>
-        <label>Количество комнат</label>
-        <input v-model.number="form.rooms_count" type="number" class="w-full border border-gray-300 rounded px-3 py-2"
-          required />
-      </article>
+      <form @submit.prevent="handleSubmit" class="space-y-4 flex flex-col">
+        <article>
+          <label>Количество комнат</label>
+          <input v-model.number="form.rooms_count" type="number" class="w-full border border-gray-300 rounded px-3 py-2"
+            required />
+        </article>
 
-      <article>
-        <label>Площадь (м²)</label>
-        <input v-model.number="form.square_meters" type="number" step="0.01"
-          class="w-full border border-gray-300 rounded px-3 py-2" required />
-      </article>
+        <article>
+          <label>Площадь (м²)</label>
+          <input v-model.number="form.square_meters" type="number" step="0.01"
+            class="w-full border border-gray-300 rounded px-3 py-2" required />
+        </article>
 
-      <article>
-        <label>Этаж</label>
-        <input v-model.number="form.floor" type="number" class="w-full border border-gray-300 rounded px-3 py-2"
-          required />
-      </article>
+        <article>
+          <label>Этаж</label>
+          <input v-model.number="form.floor" type="number" class="w-full border border-gray-300 rounded px-3 py-2"
+            required />
+        </article>
 
-      <article>
-        <label>Этажность дома</label>
-        <input v-model.number="form.floors_in_house" type="number"
-          class="w-full border border-gray-300 rounded px-3 py-2" required />
-      </article>
+        <article>
+          <label>Этажность дома</label>
+          <input v-model.number="form.floors_in_house" type="number"
+            class="w-full border border-gray-300 rounded px-3 py-2" required />
+        </article>
 
-      <article>
-        <label>Жилой комплекс</label>
-        <input v-model="form.housing_complex" type="text" class="w-full border border-gray-300 rounded px-3 py-2"
-          required />
-      </article>
+        <article>
+          <label>Жилой комплекс</label>
+          <input v-model="form.housing_complex" placeholder="ЖК" type="text" class="w-full border border-gray-300 rounded px-3 py-2"
+            required />
+        </article>
 
-      <article>
-        <label>Цена сейчас</label>
-        <input v-model.number="form.price_current" type="number" step="0.01"
-          class="w-full border border-gray-300 rounded px-3 py-2" required />
-      </article>
+        <article>
+          <label>Цена сейчас</label>
+          <input v-model.number="form.price_current" type="number" step="0.01"
+            class="w-full border border-gray-300 rounded px-3 py-2" required />
+        </article>
 
-      <article>
-        <label>Цена стартовая</label>
-        <input v-model.number="form.price_start" type="number" step="0.01"
-          class="w-full border border-gray-300 rounded px-3 py-2" required />
-      </article>
+        <article>
+          <label>Цена стартовая</label>
+          <input v-model.number="form.price_start" type="number" step="0.01"
+            class="w-full border border-gray-300 rounded px-3 py-2" required />
+        </article>
 
-      <article>
-        <label>
-          <input type="checkbox" v-model="form.has_balcony" />
-          Балкон
-        </label>
-      </article>
+        <article>
+          <label>
+            <input type="checkbox" v-model="form.has_balcony" />
+            Балкон
+          </label>
+        </article>
 
-      <article>
-        <label>
-          <input type="checkbox" v-model="form.bathroom_combined" />
-          Совмещённый санузел
-        </label>
-      </article>
+        <article>
+          <label>
+            <input type="checkbox" v-model="form.bathroom_combined" />
+            Совмещённый санузел
+          </label>
+        </article>
 
-      <article>
-        <label>Тип дома</label>
-        <select v-model="form.house_type" class="w-full border border-gray-300 rounded px-3 py-2" required>
-          <option value="Кирпичный">Кирпичный</option>
-          <option value="Панельный">Панельный</option>
-          <option value="Газобетонный">Газобетонный</option>
-        </select>
-      </article>
+        <article>
+          <label>Тип дома</label>
+          <select v-model="form.house_type" class="w-full border border-gray-300 rounded px-3 py-2" required>
+            <option value="Кирпичный">Кирпичный</option>
+            <option value="Панельный">Панельный</option>
+            <option value="Газобетонный">Газобетонный</option>
+          </select>
+        </article>
 
-      <article>
-        <label>Описание</label>
-        <textarea v-model="form.description" class="w-full border border-gray-300 rounded px-3 py-2"></textarea>
-      </article>
+        <article>
+          <label>Описание</label>
+          <textarea v-model="form.description" placeholder="Описание" class="w-full border border-gray-300 rounded px-3 py-2"></textarea>
+        </article>
 
-      <article>
-        <label>Изображения (через запятую)</label>
-        <input v-model="form.images" type="text" class="w-full border border-gray-300 rounded px-3 py-2"
-          placeholder="URL-картинки1, URL-картинки2" />
-      </article>
+        <article>
+          <label>Изображения (через запятую)</label>
+          <input v-model="form.images" type="text" class="w-full border border-gray-300 rounded px-3 py-2"
+            placeholder="URL-картинки1, URL-картинки2" />
+        </article>
 
 
-      <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Создать</button>
-    </form>
+        <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 cursor-pointer transition font-medium self-center">Создать</button>
+      </form>
+    </article>
   </article>
   <article v-else class="text-center text-3xl mt-25 mb-50 font-bold">
     Вы не обладаете правами админа!

@@ -36,7 +36,7 @@ onMounted(() => {
       >
         Выйти
       </button>
-      <router-link to="/profile/admin" class="px-3 bg-teal-700 py-2 rounded-xl font-medium text-white" v-if="role == 'admin'">
+      <router-link to="/profile/admin" class="px-3 bg-teal-700 py-2 rounded-xl font-medium text-white cursor-pointer hover:bg-teal-600 transition" v-if="role == 'admin'">
         Админ-панель
       </router-link>
     </article>

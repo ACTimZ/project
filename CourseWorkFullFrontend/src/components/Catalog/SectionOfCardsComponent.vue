@@ -189,7 +189,7 @@ function numberWithSpaces(x) {
     <teleport to="body">
       <article v-if="showContactModal" class="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
         <article class="bg-white rounded-xl py-8 px-6 w-full max-w-xl relative">
-          <button class="absolute top-3 right-4 text-xl font-bold" @click="showContactModal = false">×</button>
+          <button class="absolute top-3 right-4 text-xl font-bold cursor-pointer" @click="showContactModal = false">×</button>
 
           <h2 class="text-2xl font-bold mb-7 text-center text-indigo-900">
             Мы свяжемся с Вами по квартире №{{ selectedFlat.id }}
